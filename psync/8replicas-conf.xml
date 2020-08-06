@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- DOCTYPE ... -->
+
+<configuration>
+  <parameters>
+    <param> <name>protocol</name> <value>TCP</value> </param>
+    <param> <name>timeout</name> <value>100</value> </param>
+    <param> <name>group</name> <value>NIO</value> </param>
+    <param> <name>batch</name> <value>2700</value> </param>
+    <param> <name>cr</name> <value>2700</value> </param>
+    <param> <name>packetSize</name> <value>32760</value> </param>
+  </parameters>
+  <peers>
+    <replica> <id>0</id> <address>srv-76-164.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>1</id> <address>srv-76-165.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>2</id> <address>srv-76-166.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>3</id> <address>srv-76-167.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>4</id> <address>srv-76-168.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>5</id> <address>srv-76-169.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>6</id> <address>srv-76-180.mpi-sws.org</address> <port>4444</port> </replica>
+    <replica> <id>7</id> <address>srv-76-181.mpi-sws.org</address> <port>4444</port> </replica>
+  </peers>
+</configuration>
