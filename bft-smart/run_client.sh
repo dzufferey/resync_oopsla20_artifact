@@ -28,9 +28,5 @@ do
 	esac
 done
 
-if [ -f config/currentView ]; then
-	echo "removing config/current"
-	rm config/currentView
-fi
-
+cd $BFTS
 exec ./runscripts/smartrun.sh bftsmart.demo.microbenchmarks.ThroughputLatencyClient $ID $NBCLI $NBOPS $REQSIZE $INTERVAL $RO $VERBOSE $SIGNED

@@ -33,7 +33,7 @@ done
 
 
 # kill all lingering processes
-pkill -9 -f bin/multipaxos
+killall -9 multipaxos
 
 i=0
 
@@ -41,5 +41,5 @@ echo replica $i
 
 # start servers
 echo running server
-echo ./bin/multipaxos $BATCH -addr "$IPS[$((i + 1))]:$DEFAULT_PORT" -id $i ${IPS_PORTS[@]}
-exec ./bin/multipaxos $BATCH -addr "$IPS[$((i + 1))]:$DEFAULT_PORT" -id $i ${IPS_PORTS[@]}
+echo $GOOLONG/bin/multipaxos $BATCH -addr "$IPS[$((i + 1))]:$DEFAULT_PORT" -id $i ${IPS_PORTS[@]}
+exec $GOOLONG/bin/multipaxos $BATCH -addr "$IPS[$((i + 1))]:$DEFAULT_PORT" -id $i ${IPS_PORTS[@]}

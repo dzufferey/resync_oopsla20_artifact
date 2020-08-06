@@ -7,7 +7,6 @@ do
 	esac
 done
 
-id=`$RESYNC/findId.sh`
 conf=$RESYNC/libpaxos3/paxos$REPLICAS.conf
-echo "running replica $id with $conf"
-exec $LPAXOS/sample/replica $id $conf
+echo "running client with $conf"
+exec $LPAXOS/sample/client $conf -o 100 -p 0 -v 32768

@@ -31,9 +31,9 @@ for (( i=1; i<=${#IPS}; i++ )); do
 done
 # }}}
 
-pkill -9 -f bin/client
+killall -9 client
 
 # start client
 echo running client
-echo "./bin/client $CONFLICT_PERC $REQUEST_COUNT $ROUND_COUNT $WRITE_PERC ${IPS_PORTS[@]}"
-./bin/client $CONFLICT_PERC $REQUEST_COUNT $ROUND_COUNT $WRITE_PERC ${IPS_PORTS[@]}
+echo "$GOOLONG/bin/client $CONFLICT_PERC $REQUEST_COUNT $ROUND_COUNT $WRITE_PERC ${IPS_PORTS[@]}"
+./$GOOLONG/client $CONFLICT_PERC $REQUEST_COUNT $ROUND_COUNT $WRITE_PERC ${IPS_PORTS[@]}

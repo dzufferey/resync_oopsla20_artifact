@@ -1,6 +1,8 @@
+#!/bin/bash
+
 rm -rf ~/etcd_storage/data
 
-$ETCDDIR/etcd-download-test/etcd --name s1 \
+exec $ETCD/bin/etcd --name s1 \
 	--data-dir ~/etcd_storage/data \
 	--listen-client-urls http://REPLICA0:2379 \
 	--advertise-client-urls http://REPLICA0:2379 \

@@ -75,4 +75,4 @@ s/REPLICA5/${ips[REPLICA5]}/g
 s/REPLICA6/${ips[REPLICA6]}/g
 s/REPLICA7/${ips[REPLICA7]}/g
 s/REPLICA8/${ips[REPLICA8]}/g
-" libpaxos3/*.conf bft-smart/config/hosts*.config etcd/etcd_test_*.sh
+" libpaxos3/*.conf bft-smart/config/hosts*.config etcd/*.sh

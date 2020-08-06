@@ -2,32 +2,32 @@
 
 N=4
 
-while getopts 'n:f:' option 
-do 
-	case "${option}" in 
-		n) N=${OPTARG};; 
-	esac 
-done 
+while getopts 'n:f:' option
+do
+	case "${option}" in
+		n) N=${OPTARG};;
+	esac
+done
 
-if [ -f config/currentView ]; then
+if [ -f $BFTS/config/currentView ]; then
 	echo "removing config/current"
-	rm config/currentView
+	rm $BFTS/config/currentView
 fi
-	
+
 conf=hosts$N.config
 syst=system$N.config
 
-if [ -f config/hosts.config ]; then
-	rm config/hosts.config
+if [ -f $BFTS/config/hosts.config ]; then
+	rm $BFTS/config/hosts.config
 fi
 echo "removing repalcing hosts.config by $conf"
-cp config/$conf config/hosts.config
+cp $RESYNC/config/$conf $BFTS/config/hosts.config
 
-if [ -f config/system.config ]; then
-	rm config/system.config
+if [ -f $BFTS/config/system.config ]; then
+	rm $BFTS/config/system.config
 fi
 echo "removing repalcing system.config by $syst"
-cp config/$syst config/system.config
+cp $RESYNC/config/$syst $BFTS/config/system.config
 
 # trap CTRL-C input, and kill every process created
 trap "pkill -P $$; sleep 1; exit 1;" INT
@@ -49,4 +49,5 @@ context="false"
 signed="default"
 
 echo "running replica $id"
+cd $BFTS
 exec ./runscripts/smartrun.sh bftsmart.demo.microbenchmarks.ThroughputLatencyServer $id $interval $replySize $stateSize $context $signed

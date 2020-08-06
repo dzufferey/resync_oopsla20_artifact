@@ -158,6 +158,8 @@ This covers both ReSync and PSync.
    sbt compile
    sbt test:compile
    ./utils/generateClassPath.sh
+   export PSYNC=$PWD
+   echo "export PSYNC=$PWD" >> ~/.bashrc
    ```
 2. Local test run, part 1
    ```sh
@@ -224,6 +226,8 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    cd libpaxos/build
    cmake ..
    make
+   export LPAXOS=$PWD
+   echo "export LPAXOS=$PWD" >> ~/.bashrc
    ```
 2. local test run
    ```sh
@@ -278,6 +282,8 @@ TODO give md5sum/hash of commits files
    source build
    etcd_build
    tools_build
+   export ETCD=$PWD
+   echo "export ETCD=$PWD" >> ~/.bashrc
    ```
    This install the latest version of etcd (3.4.10 when writting this).
 3. local test run
@@ -314,6 +320,8 @@ To install and run Goolong, we follow the information from https://github.com/gl
    Now we can build goolong.
    ```sh
    make
+   export GOOLONG=$PWD
+   echo "export GOOLONG=$PWD" >> ~/.bashrc
    ```
 2. local test run
    running
@@ -384,6 +392,8 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
    tar -xzf v1.2.tar.gz
    cd library-1.2
    ant
+   export BFTS=$PWD
+   echo "export BFTS=$PWD" >> ~/.bashrc
    ```
 2. local test run
   - edit the configuration file `config/hosts.config` so it contains
