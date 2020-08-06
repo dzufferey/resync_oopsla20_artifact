@@ -56,8 +56,9 @@ sudo apt install clusterssh
 Then put the addresses of the machines you will use in `.clusterssh/clusters`.
 For instance, the file may contain
 ```
-resync srv-76-164.mpi-sws.org srv-76-165.mpi-sws.org srv-76-166.mpi-sws.org srv-76-167.mpi-sws.org srv-76-168.mpi-sws.org srv-76-169.mpi-sws.org srv-76-117.mpi-sws.org srv-76-118.mpi-sws.org srv-76-119.mpi-sws.org srv-76-120.mpi-sws.org
+resync srv-76-164.mpi-sws.org srv-76-165.mpi-sws.org srv-76-166.mpi-sws.org srv-76-167.mpi-sws.org srv-76-168.mpi-sws.org srv-76-169.mpi-sws.org srv-76-117.mpi-sws.org srv-76-118.mpi-sws.org srv-76-119.mpi-sws.org
 ```
+In the rest of this artifact, we will use these machines names as placeholder.
 
 Then you can connect to all the machines with
 ```
@@ -229,20 +230,103 @@ TODO for each test
 
 #### ReSync
 
+./test_scripts/testBLV.sh --conf $RESYNC/batching/3replicas-conf.xml -to 5 --cr 2700
+./test_scripts/testBLV.sh --conf $RESYNC/batching/4replicas-conf.xml -to 5 --cr 2700
+./test_scripts/testBLV.sh --conf $RESYNC/batching/5replicas-conf.xml -to 5 --cr 2700
+./test_scripts/testBLV.sh --conf $RESYNC/batching/6replicas-conf.xml -to 5 --cr 2700
+./test_scripts/testBLV.sh --conf $RESYNC/batching/7replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
+./test_scripts/testBLV.sh --conf $RESYNC/batching/8replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
+./test_scripts/testBLV.sh --conf $RESYNC/batching/9replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
+
 #### PSync
 
+./test_scripts/testBLV.sh --conf 3replicas-conf.xml -to 2 --cr 1200  --syncTO
+./test_scripts/testBLV.sh --conf 4replicas-conf.xml -to 3 --cr 800  --syncTO
+./test_scripts/testBLV.sh --conf 5replicas-conf.xml -to 4 --cr 700  --syncTO
+./test_scripts/testBLV.sh --conf 6replicas-conf.xml -to 3 --cr 600 --syncTO
+./test_scripts/testBLV.sh --conf 7replicas-conf.xml -to 3 --cr 400 --syncTO
+./test_scripts/testBLV.sh --conf 8replicas-conf.xml -to 4 --cr 300 --syncTO
+./test_scripts/testBLV.sh --conf 9replicas-conf.xml -to 5 --cr 300 --syncTO
+
+
 #### LibPaxos3
+
+libpaxos 3 on mpi_9
+-- for the server
+cd dz_xp/libpaxos/build
+./run_replicas.sh -n 9
+-- for the client
+cd dz_xp/libpaxos/build
+./sample/client paxos9.conf -o 1000 -p 0 -v 8192
+./sample/client paxos9.conf -o 100 -p 0 -v 32768
 
 #### etcd
 
 #### Goolong
 
+-> run_server.sh -n N -b
+-> run_client.sh -n N -q 10000000
 
 ### Byzantine test: ReSync against Bft-SMaRt (Figure 8b)
 
 #### ReSync
 
+./test_scripts/testTempByzantine.sh --conf b9replicas-conf.xml --noForwarding
+rest of options in config
+n = 9 -> 4.65 (406k)
+n = 8 -> 5.75 (503k)
+n = 7 -> 7.04 (610k) -to 1000
+n = 6 -> 6.54 (571k) -to 300
+n = 5 -> 7.74 (676k) -to 300
+n = 4 -> 8.15 (712k) -to 200
+
 #### Bft-SMaRt
+
+------
+
+n = 9, f = 2
+./run_client.sh -t 7[8] -o10000 -s 1536
+1536 × 2135 ÷ 1024 ÷ 1024 = 3.13
+./run_client.sh -t 7 -o 10000 -s 2048
+2048 × 1850 ÷ 1024 ÷ 1024 = 3.61
+
+------
+
+n = 8, f = 2
+./run_client.sh -t 12 -o 10000 -s 1536
+1536 × 3000 ÷ 1024 ÷ 1024 = 4.39
+./run_client.sh -t 12 -o 10000 -s 2048
+2048 × 2450 ÷ 1024 ÷ 1024 = 4.79
+
+------
+
+n = 7, f = 2
+./run_client.sh -t 14 -o 20000 -s 2048
+2048 × 3000 ÷ 1024 ÷ 1024 = 5.86
+./run_client.sh -t 16 -o 8000 -s 4096
+4096 × 2200 ÷ 1024 ÷ 1024 = 8.59
+./run_client.sh -t 10 -o 8000 -s 8192
+8192 × 1100 ÷ 1024 ÷ 1024 = 8.59
+
+---
+
+n = 6, f = 1
+./run_client.sh -t 13 -o 8000 -s 8192
+8192 × 1300 ÷ 1024 ÷ 1024 = 10.16
+
+----
+
+n = 5, f = 1
+./run_client.sh -t 16 -o 8000 -s 8192
+8192 × 1450 ÷ 1024 ÷ 1024 = 11.32
+./run_client.sh -t 14 -o 8000 -s 16384
+16384 ÷ 1024 ÷ 1024 × 760 = 11.86
+
+----
+
+n = 4, f = 1
+./run_client.sh -t 16 -o 8000 -s 16384
+16384 × 900 ÷ 1024 ÷ 1024 = 14.06
 
 
 ### Expressiveness of ReSync compared to PSync (Table 1)
@@ -255,6 +339,8 @@ TODO for each test
 
 
 ### Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
+
+./test_scripts/testLV.sh -to 3 --protocol TCP -rt 20
 
 
 ## Caveats

@@ -19,14 +19,14 @@ RO="false"
 VERBOSE="false"
 SIGNED="default"
 
-while getopts 't:o:s:' option 
-do 
-	case "${option}" in 
-		t) NBCLI=${OPTARG};; 
-		o) NBOPS=${OPTARG};; 
-		s) REQSIZE=${OPTARG};; 
-	esac 
-done 
+while getopts 't:o:s:' option
+do
+	case "${option}" in
+		t) NBCLI=${OPTARG};;
+		o) NBOPS=${OPTARG};;
+		s) REQSIZE=${OPTARG};;
+	esac
+done
 
 if [ -f config/currentView ]; then
 	echo "removing config/current"

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- DOCTYPE ... -->
+
+<configuration>
+  <parameters>
+    <param> <name>protocol</name> <value>TCP</value> </param>
+    <param> <name>timeout</name> <value>100</value> </param>
+    <param> <name>group</name> <value>NIO</value> </param>
+    <param> <name>batch</name> <value>2700</value> </param>
+    <param> <name>cr</name> <value>2700</value> </param>
+    <param> <name>packetSize</name> <value>32760</value> </param>
+  </parameters>
+  <peers>
+    <replica> <id>0</id> <address>REPLICA0</address> <port>4444</port> </replica>
+    <replica> <id>1</id> <address>REPLICA1</address> <port>4444</port> </replica>
+    <replica> <id>2</id> <address>REPLICA2</address> <port>4444</port> </replica>
+    <replica> <id>3</id> <address>REPLICA3</address> <port>4444</port> </replica>
+  </peers>
+</configuration>

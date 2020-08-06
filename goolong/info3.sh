@@ -1,8 +1,7 @@
-
 export IPS=( \
-	srv-76-164 \
-	srv-76-165 \
-	srv-76-166 \
+	REPLICA0 \
+	REPLICA1 \
+	REPLICA2 \
 	   )
 
 export DEFAULT_PORT="7070"

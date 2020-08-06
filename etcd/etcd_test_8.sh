@@ -1,13 +1,12 @@
 rm -rf ~/etcd_storage/data
 
-
 $ETCDDIR/etcd-download-test/etcd --name s1 \
 	--data-dir ~/etcd_storage/data \
-	--listen-client-urls http://139.19.162.64:2379 \
-	--advertise-client-urls http://139.19.162.64:2379 \
-	--listen-peer-urls http://139.19.162.64:2380 \
-	--initial-advertise-peer-urls http://139.19.162.64:2380 \
-	--initial-cluster s1=http://139.19.162.64:2380,s2=http://139.19.162.65:2380,s3=http://139.19.162.66:2380,s4=http://139.19.162.67:2380,s5=http://139.19.162.68:2380,s6=http://139.19.162.69:2380,s7=http://139.19.162.80:2380,s8=http://139.19.162.81:2380 \
+	--listen-client-urls http://REPLICA0:2379 \
+	--advertise-client-urls http://REPLICA0:2379 \
+	--listen-peer-urls http://REPLICA0:2380 \
+	--initial-advertise-peer-urls http://REPLICA0:2380 \
+	--initial-cluster s1=http://REPLICA0:2380,s2=http://REPLICA1:2380,s3=http://REPLICA2:2380,s4=http://REPLICA3:2380,s5=http://REPLICA4:2380,s6=http://REPLICA5:2380,s7=http://REPLICA6:2380,s8=http://REPLCA7:2380 \
 	--initial-cluster-token tkn \
 	--initial-cluster-state new \
 	--heartbeat-interval '1000' \
