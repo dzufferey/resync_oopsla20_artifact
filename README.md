@@ -144,6 +144,7 @@ $RESYNC/findId.sh
 ```
 The command should ouput the ID of the replica, a number between 0 and 8.
 
+If you did an error, you can reset the state of the repo with `git checkout .` and then try again.
 
 ### Install PSync
 
@@ -278,11 +279,19 @@ TODO give md5sum/hash of commits files
 2. local test run
    ```sh
    # start a local etcd server
-   $ETCDDIR/etcd-download-test/etcd
-
+   $ETCDDIR/etcd-download-test/etcd &
    # write,read to etcd
    $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar
    $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo
+   killall etcd
+   ```
+   The `etcdctl` command should produce the following output:
+   ```
+   # $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar
+   OK
+   # $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo
+   foo
+   bar
    ```
 3. distributed test run
    TODO ...

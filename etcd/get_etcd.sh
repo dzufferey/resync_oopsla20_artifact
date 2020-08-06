@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 set -x #echo on
 
 ETCD_VER=v3.4.10
