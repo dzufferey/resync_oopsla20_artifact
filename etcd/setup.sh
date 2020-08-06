@@ -1,5 +1,5 @@
 #!/bin/sh
-export ETCDDIR=~/etcd_xp/
+export ETCDDIR=$HOME/etcd_xp/
 export GOPATH=$ETCDDIR
 mkdir $ETCDDIR
 echo "export ETCDDIR=$ETCDDIR" >> ~/.bashrc

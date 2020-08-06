@@ -117,7 +117,7 @@ Here are the command to intall the dependencies.
 git clone https://github.com/dzufferey/resync_oopsla20_artifact.git
 cd resync_oopsla20_artifact
 export RESYNC=$PWD
-echo "export RESYNC=$PWD" >> .bashrc
+echo "export RESYNC=$PWD" >> ~/.bashrc
 ```
 
 The last line adds the `RESYNC` environment variable to the `.bashrc` file.
