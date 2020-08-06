@@ -2,6 +2,10 @@
 
 # this script will insert the information into all the configuration files
 
+declare -A addresses
+declare -A ips
+declare -A hosts
+
 # TODO put the URL of the machines
 addresses=( ["REPLICA0"]="srv-76-164.mpi-sws.org"
             ["REPLICA1"]="srv-76-165.mpi-sws.org"
@@ -35,7 +39,6 @@ hosts=( ["REPLICA0"]="srv-76-164"
         ["REPLICA7"]="srv-76-118"
         ["REPLICA8"]="srv-76-119" )
 
-# Shared
 sed -i "
 s/REPLICA0/${hosts[REPLICA0]}/g
 s/REPLICA1/${hosts[REPLICA1]}/g
