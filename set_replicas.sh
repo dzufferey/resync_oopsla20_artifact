@@ -64,7 +64,7 @@ s/REPLICA7/${addresses[REPLICA7]}/g
 s/REPLICA8/${addresses[REPLICA8]}/g
 " psync/batching/*.xml psync/byzantine/*.xml psync/default/*.xml goolong/info*.sh
 
-# LibPaxos3, Bft-SMaRt
+# LibPaxos3, Bft-SMaRt, etcd
 sed -i "
 s/REPLICA0/${ips[REPLICA0]}/g
 s/REPLICA1/${ips[REPLICA1]}/g
@@ -75,6 +75,4 @@ s/REPLICA5/${ips[REPLICA5]}/g
 s/REPLICA6/${ips[REPLICA6]}/g
 s/REPLICA7/${ips[REPLICA7]}/g
 s/REPLICA8/${ips[REPLICA8]}/g
-" libpaxos3/*.conf bft-smart/config/hosts*.config
-
-# etcd
+" libpaxos3/*.conf bft-smart/config/hosts*.config etcd/etcd_test_*.sh
