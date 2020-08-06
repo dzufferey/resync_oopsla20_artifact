@@ -135,7 +135,8 @@ The script contains `TODO` comments above the part you need to modify.
 
 After you are done with the modifications, just run the script:
 ```sh
-$RESYNC/set_replicas.sh
+cd $RESYNC
+./set_replicas.sh
 ```
 
 To check that the script worked properly you can run
@@ -268,32 +269,35 @@ TODO give md5sum/hash of commits files
 
 ### Install etcd
 
-1. We install etcd following the instructions at [https://github.com/etcd-io/etcd/releases]().
-   First, you can edit the script `$RESYNC/etcd/setup.sh` and change the destination folder (`ETCDDIR`) if you wish.
-   Then execute:
+1. We install etcd from source as the benchmarking tool for etcd does not come with the standard installation.
+   The last verison of etcd to build with go 1.13 is etcd 3.4.9.
    ```sh
-   $RESYNC/etcd/setup.sh
-   $RESYNC/etcd/get_etcd.sh
+   git clone https://github.com/etcd-io/etcd.git
+   cd etcd
+   git checkout tags/v3.4.9
+   source build
+   etcd_build
+   tools_build
    ```
    This install the latest version of etcd (3.4.10 when writting this).
-2. local test run
+3. local test run
    ```sh
-   # start a local etcd server
-   $ETCDDIR/etcd-download-test/etcd &
+   # from the etcd directory
+   ./bin/etcd &
    # write,read to etcd
-   $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar
-   $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo
+   ./bin/etcdctl --endpoints=localhost:2379 put foo bar
+   ./bin/etcdctl --endpoints=localhost:2379 get foo
    killall etcd
    ```
    The `etcdctl` command should produce the following output:
    ```
-   # $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar
+   # ./bin/etcdctl --endpoints=localhost:2379 put foo bar
    OK
-   # $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo
+   # ./bin/etcdctl --endpoints=localhost:2379 get foo
    foo
    bar
    ```
-3. distributed test run
+4. distributed test run
    TODO ...
 
 ### Install Goolong
@@ -460,6 +464,8 @@ cd dz_xp/libpaxos/build
 ```
 
 #### etcd
+
+...
 
 #### Goolong
 
