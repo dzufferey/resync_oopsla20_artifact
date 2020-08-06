@@ -211,7 +211,10 @@ This covers both ReSync and PSync.
    -Djavax.net.ssl.trustStoreType=JKS
    ```
 3. Distributed test run:
-   ...
+   on the 9 test machines at the same time, run the following command:
+   ```sh
+   $RESYNC/psync/testTwoPhaseCommit.sh
+   ```
 
 TODO give md5sum/hash of commits files
 
@@ -475,7 +478,7 @@ cd dz_xp/libpaxos/build
 
 #### etcd
 
-...
+... https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/performance.md#benchmarks
 
 #### Goolong
 
