@@ -1,10 +1,14 @@
 # 424. Programming at the Edge of Synchrony
 
-Documentation to reproduce the experiments from the paper "Programming at the Edge of Synchrony"
+Documentation to reproduce the experiments from the paper "Programming at the Edge of Synchrony".
 
 ## Scope of the Artifact
 
 This artifacts explain how to run ReSync and the other tools against which we compare.
+
+TODO we try to use the latest available version of the tools against which we compare.
+
+TODO scripts for the plots
 
 ### Software Setup
 
@@ -24,7 +28,7 @@ If you want to witness ReSync running the machines used to get the numbers in th
 PSync and ReSync have the same codebase.
 As Psync is a special case of ReSync, they share the same runtime.
 PSync is just a specific set of progress condition in ReSync.
-This is implemented in the file `src/main/scala/psync/Round.scala`.
+This is implemented in the file [`src/main/scala/psync/Round.scala`](https://github.com/dzufferey/psync/blob/master/src/main/scala/psync/Round.scala).
 A `Round` is the PSync model and an `EventRound` is the ReSync model.
 It is possible to get some of the benefit of ReSync with `Round` by overriding `expectedNbrMessages`.
 We will use that option when comparing PSync and ReSync.
@@ -100,11 +104,12 @@ Here are the command to intall the dependencies.
   ```
   If you use debian stable, you need to install go manually:
   ```sh
-  wget https://golang.org/dl/go1.14.6.linux-amd64.tar.gz
-  tar -C /usr/local -xzf go1.14.6.linux-amd64.tar.gz
+  wget https://golang.org/dl/go1.13.14.linux-amd64.tar.gz
+  tar -C /usr/local -xzf go1.13.14.linux-amd64.tar.gz
   export PATH=$PATH:/usr/local/go/bin
   echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
   ```
+  [Goolong does not work with go 1.14](https://github.com/gleissen/goolong/issues/2), so the version 1.13 is needed.
 
 ### Clone the artifact repo
 
@@ -154,6 +159,7 @@ This covers both ReSync and PSync.
    ```
 2. Local test run, part 1
    ```sh
+   # from the psync folder
    ./test_scripts/testLV.sh
    ```
    The test runs for about 1 minute and the output should looks like
@@ -188,6 +194,7 @@ This covers both ReSync and PSync.
    The library we use for serialization ([twitter chill](https://github.com/twitter/chill)) uses some deprecated features of the JVM.
 2. Local test run, part 2
    ```sh
+   # from the psync folder
    ./test_scripts/testTempByzantine.sh
    ```
    The test runs for about 1 minute.
@@ -217,42 +224,43 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    make
    ```
 2. local test run
-    ```sh
-    cd libpaxos/build
-    ./sample/proposer 0 ../paxos.conf > /dev/null &
-    ./sample/acceptor 1 ../paxos.conf > /dev/null &
-    ./sample/acceptor 2 ../paxos.conf > /dev/null &
-    ./sample/client ../paxos.conf -p 0 &
-    sleep 10; killall client proposer acceptor
-    ```
-    The last command let the processes run for 10 seconds and then kill them.
-    The output should look like
-    ```
-    06 Aug 15:49:51. Connect to 127.0.0.1:8801
-    06 Aug 15:49:51. Connect to 127.0.0.1:8802
-    Connected to proposer
-    06 Aug 15:49:51. Connected to 127.0.0.1:8800
-    06 Aug 15:49:51. Connected to 127.0.0.1:8801
-    06 Aug 15:49:51. Connected to 127.0.0.1:8802
-    3239 value/sec, 2.37 Mbps, latency min 182 us max 1117 us avg 301 us
-    3138 value/sec, 2.30 Mbps, latency min 210 us max 674 us avg 345 us
-    3019 value/sec, 2.21 Mbps, latency min 232 us max 607 us avg 377 us
-    3047 value/sec, 2.23 Mbps, latency min 236 us max 507 us avg 305 us
-    3057 value/sec, 2.24 Mbps, latency min 236 us max 1059 us avg 338 us
-    3061 value/sec, 2.24 Mbps, latency min 234 us max 617 us avg 317 us
-    3043 value/sec, 2.23 Mbps, latency min 237 us max 569 us avg 316 us
-    2935 value/sec, 2.15 Mbps, latency min 233 us max 545 us avg 326 us
-    2982 value/sec, 2.18 Mbps, latency min 234 us max 1457 us avg 314 us
-    3055 value/sec, 2.24 Mbps, latency min 224 us max 583 us avg 326 us
-    [1]   Terminated              ./sample/acceptor 1 ../paxos.conf > /dev/null
-    [2]   Terminated              ./sample/acceptor 2 ../paxos.conf > /dev/null
-    [3]-  Terminated              ./sample/proposer 0 ../paxos.conf > /dev/null
-    [4]+  Terminated              ./sample/client ../paxos.conf -p 0
-    ```
+   ```sh
+   # from the libpaxos/build folder
+   ./sample/proposer 0 ../paxos.conf > /dev/null &
+   ./sample/acceptor 1 ../paxos.conf > /dev/null &
+   ./sample/acceptor 2 ../paxos.conf > /dev/null &
+   ./sample/client ../paxos.conf -p 0 &
+   sleep 10; killall client proposer acceptor
+   ```
+   The last command let the processes run for 10 seconds and then kill them.
+   The output should look like
+   ```
+   06 Aug 15:49:51. Connect to 127.0.0.1:8801
+   06 Aug 15:49:51. Connect to 127.0.0.1:8802
+   Connected to proposer
+   06 Aug 15:49:51. Connected to 127.0.0.1:8800
+   06 Aug 15:49:51. Connected to 127.0.0.1:8801
+   06 Aug 15:49:51. Connected to 127.0.0.1:8802
+   3239 value/sec, 2.37 Mbps, latency min 182 us max 1117 us avg 301 us
+   3138 value/sec, 2.30 Mbps, latency min 210 us max 674 us avg 345 us
+   3019 value/sec, 2.21 Mbps, latency min 232 us max 607 us avg 377 us
+   3047 value/sec, 2.23 Mbps, latency min 236 us max 507 us avg 305 us
+   3057 value/sec, 2.24 Mbps, latency min 236 us max 1059 us avg 338 us
+   3061 value/sec, 2.24 Mbps, latency min 234 us max 617 us avg 317 us
+   3043 value/sec, 2.23 Mbps, latency min 237 us max 569 us avg 316 us
+   2935 value/sec, 2.15 Mbps, latency min 233 us max 545 us avg 326 us
+   2982 value/sec, 2.18 Mbps, latency min 234 us max 1457 us avg 314 us
+   3055 value/sec, 2.24 Mbps, latency min 224 us max 583 us avg 326 us
+   [1]   Terminated              ./sample/acceptor 1 ../paxos.conf > /dev/null
+   [2]   Terminated              ./sample/acceptor 2 ../paxos.conf > /dev/null
+   [3]-  Terminated              ./sample/proposer 0 ../paxos.conf > /dev/null
+   [4]+  Terminated              ./sample/client ../paxos.conf -p 0
+   ```
 3. distributed test run
-    ```sh
-    cd libpaxos/build
-    ```
+   ```sh
+   # from the libpaxos/build folder
+   ...
+   ```
    TODO ...
 
 TODO give md5sum/hash of commits files
@@ -287,15 +295,67 @@ To install and run Goolong, we follow the information from https://github.com/gl
    ```sh
    git clone https://github.com/gleissen/goolong.git
    cd goolong
+   ```
+   Before, we can build goolong we need to [make a small fix](https://github.com/gleissen/goolong/issues/1).
+   Open the file `src/multipaxos/multipaxos.go` and on line 495, replace `Assign` by `Put`.
+   Now we can build goolong.
+   ```sh
    make
    ```
 2. local test run
-   ```
+   running
+   ```sh
+   # in the goolong folder
    ./run_paxos.sh
    ```
-   should produce an ouput along the lines of
+   should produce an ouput which looks like:
    ```
-   FIXME
+   running multi paxos with 3 servers and a client ...
+   make: Entering directory '/root/goolong'
+   make: Nothing to be done for 'all'.
+   make: Leaving directory '/root/goolong'
+   Starting.
+   node: waiting for connections
+   Starting.
+   node: waiting for connections
+   Starting.
+   node: waiting for connections
+   Starting.
+   node: waiting for connections
+   Replica id: 0. Done connecting.
+   Done starting.
+   Starting.
+   node: waiting for connections
+   Replica id: 1. Done connecting.
+   Done starting.
+   Starting.
+   node: waiting for connections
+   Replica id: 0. Done connecting.
+   Done starting.
+   Waiting for connections...
+   Replica id: 1. Done connecting.
+   Done starting.
+   Waiting for connections...
+   Replica id: 2. Done connecting.
+   Done starting.
+   Replica id: 2. Done connecting.
+   Done starting.
+   Waiting for connections...
+   Connecting to replicas..
+   Done connecting to 0
+   Accepted connection from: 127.0.0.1:40450
+   Done connecting to 1
+   Done connecting to 2
+   Connected to replicas: readers are [0xc000012300 0xc000012360 0xc0000123c0] .
+   Accepted connection from: 127.0.0.1:34124
+   Accepted connection from: 127.0.0.1:60952
+   Round took 4.9297561210000005
+   Test took 4.929788226
+   Successful: 5000
+   Caught signal; exiting
+   Caught signal; exiting
+   Caught signal; exiting
+   DONE !
    ```
 3. distributed test run.
    TODO ...
@@ -308,7 +368,7 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
 1. Download and ant Bft-SMaRt
    ```sh
    wget https://github.com/bft-smart/library/archive/v1.2.tar.gz
-   tar -xzf library-1.2.tar.gz
+   tar -xzf v1.2.tar.gz
    cd library-1.2
    ant
    ```
@@ -321,18 +381,17 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
     2 127.0.0.1 11020
     3 127.0.0.1 11030
     ```
-  - across 4 different console run the following (1 command per console):
+  - run the test:
     ```sh
-    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 0
-    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 1
-    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 2
-    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 3
+    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 0 &
+    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 1 &
+    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 2 &
+    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterServer 3 &
+    sleep 10
+    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterClient 1001 1 1000 &
+    sleep 10; killall java
     ```
-  - run the client:
-    ```
-    ./runscripts/smartrun.sh bftsmart.demo.counter.CounterClient 1001 1 1000
-    ```
-    TODO what the output should look like
+    The test produce a fair amount of output related to the client invoking and increment counter operation and the replicas print their state (`---------- DEBUG INFO ----------`) just before exiting.
 3. distributed test run
    TODO ...
 
@@ -342,10 +401,9 @@ We now explain how to reproduce the following
 
 1. Benign test: ReSync against LibPaxos3, etcd, Goolong and PSync (Figure 8a)
 2. Byzantine test: ReSync against Bft-SMaRt (Figure 8b)
-3. Expressivness of ReSync compared to PSync (Table 1)
-4. Comparing progress conditions for the two-phase commit protocol with TCP and a 5ms timeout (Figure 9a)
-5. Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
-6. Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
+3. Comparing progress conditions for the two-phase commit protocol with TCP and a 5ms timeout (Figure 9a)
+4. Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
+5. Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
 TODO for each test
 - how to run (configuration files, scripts)
@@ -356,6 +414,7 @@ TODO for each test
 
 #### ReSync
 
+```
 ./test_scripts/testBLV.sh --conf $RESYNC/batching/3replicas-conf.xml -to 5 --cr 2700
 ./test_scripts/testBLV.sh --conf $RESYNC/batching/4replicas-conf.xml -to 5 --cr 2700
 ./test_scripts/testBLV.sh --conf $RESYNC/batching/5replicas-conf.xml -to 5 --cr 2700
@@ -363,9 +422,11 @@ TODO for each test
 ./test_scripts/testBLV.sh --conf $RESYNC/batching/7replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
 ./test_scripts/testBLV.sh --conf $RESYNC/batching/8replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
 ./test_scripts/testBLV.sh --conf $RESYNC/batching/9replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
+```
 
 #### PSync
 
+```
 ./test_scripts/testBLV.sh --conf 3replicas-conf.xml -to 2 --cr 1200  --syncTO
 ./test_scripts/testBLV.sh --conf 4replicas-conf.xml -to 3 --cr 800  --syncTO
 ./test_scripts/testBLV.sh --conf 5replicas-conf.xml -to 4 --cr 700  --syncTO
@@ -373,10 +434,12 @@ TODO for each test
 ./test_scripts/testBLV.sh --conf 7replicas-conf.xml -to 3 --cr 400 --syncTO
 ./test_scripts/testBLV.sh --conf 8replicas-conf.xml -to 4 --cr 300 --syncTO
 ./test_scripts/testBLV.sh --conf 9replicas-conf.xml -to 5 --cr 300 --syncTO
+```
 
 
 #### LibPaxos3
 
+```
 libpaxos 3 on mpi_9
 -- for the server
 cd dz_xp/libpaxos/build
@@ -385,18 +448,22 @@ cd dz_xp/libpaxos/build
 cd dz_xp/libpaxos/build
 ./sample/client paxos9.conf -o 1000 -p 0 -v 8192
 ./sample/client paxos9.conf -o 100 -p 0 -v 32768
+```
 
 #### etcd
 
 #### Goolong
 
+```
 -> run_server.sh -n N -b
 -> run_client.sh -n N -q 10000000
+```
 
 ### Byzantine test: ReSync against Bft-SMaRt (Figure 8b)
 
 #### ReSync
 
+```
 ./test_scripts/testTempByzantine.sh --conf b9replicas-conf.xml --noForwarding
 rest of options in config
 n = 9 -> 4.65 (406k)
@@ -405,17 +472,16 @@ n = 7 -> 7.04 (610k) -to 1000
 n = 6 -> 6.54 (571k) -to 300
 n = 5 -> 7.74 (676k) -to 300
 n = 4 -> 8.15 (712k) -to 200
+```
 
 #### Bft-SMaRt
 
-------
-
+```
 n = 9, f = 2
 ./run_client.sh -t 7[8] -o10000 -s 1536
 1536 × 2135 ÷ 1024 ÷ 1024 = 3.13
 ./run_client.sh -t 7 -o 10000 -s 2048
 2048 × 1850 ÷ 1024 ÷ 1024 = 3.61
-
 ------
 
 n = 8, f = 2
@@ -453,9 +519,7 @@ n = 5, f = 1
 n = 4, f = 1
 ./run_client.sh -t 16 -o 8000 -s 16384
 16384 × 900 ÷ 1024 ÷ 1024 = 14.06
-
-
-### Expressiveness of ReSync compared to PSync (Table 1)
+```
 
 
 ### Comparing progress conditions for the two-phase commit protocol with TCP and a 5ms timeout (Figure 9a)
