@@ -34,12 +34,13 @@ We will use that option when comparing PSync and ReSync.
 
 
 1. Install clusterssh (optional but really helpful later)
-2. Clone the artifact repo
-3. Install PSync
-4. Install LibPaxos3
-5. Install etcd
-6. Install Goolong
-7. Install Bft-SMaRt
+2. Install dependencies
+3. Clone the artifact repo
+4. Install PSync
+5. Install LibPaxos3
+6. Install etcd
+7. Install Goolong
+8. Install Bft-SMaRt
 
 Except for clusterssh, all the other tools should be installed on all the machines running the tests.
 clusterssh is installed on the machine the perform running the tests.
@@ -67,26 +68,139 @@ cssh resync
 
 From now on, you should connect to the test machines and the rest of the setup occurs there.
 
+### Install dependencies
+
+The tools we use have some external dependencies and we group their installation here.
+Here are the command to intall the dependencies.
+
+* Utils:
+  ```sh
+  sudo apt install curl wget git zsh
+  ```
+* C: these are the dependencies for LibPaxos3.
+  ```sh
+  sudo apt install build-essential cmake libevent-dev libmsgpack-dev
+  ```
+* Java: Bft-SMaRt and PSync need Java
+  ```sh
+  sudo apt install default-jdk ant
+  ```
+* Scala: PSync needs scala on to of java. [sbt](https://www.scala-sbt.org/) takes care of building everything.
+  ```sh
+  echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+  curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add
+  sudo apt-get update
+  sudo apt-get install sbt
+  ```
+* Go is needed for etcd and Goolong
+  etcd requires a fairly recent version of go.
+  If you use Ubuntu 20.04, you can do
+  ```sh
+  sudo apt install golang
+  ```
+  If you use debian stable, you need to install go manually:
+  ```sh
+  wget https://golang.org/dl/go1.14.6.linux-amd64.tar.gz
+  tar -C /usr/local -xzf go1.14.6.linux-amd64.tar.gz
+  export PATH=$PATH:/usr/local/go/bin
+  echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+  ```
+
 ### Clone the artifact repo
 
 ```sh
 git clone https://github.com/dzufferey/resync_oopsla20_artifact.git
 cd resync_oopsla20_artifact
-export RESYNC=$pwd
-echo "export RESYNC=$pwd" >> .bashrc
+export RESYNC=$PWD
+echo "export RESYNC=$PWD" >> .bashrc
 ```
 
 The last line adds the `RESYNC` environment variable to the `.bashrc` file.
 So if you disconnect and reconnect to the machine the variable will always be defined.
+
+#### Setting the addresses for the machines
+
+The artifact contain scripts that help you run the tools.
+These script needs to know about the addresses of the test machines that you use.
+
+The script `$RESYNC/set_replicas.sh` performs this configuration step.
+
+First, modify the script to insert the information about your machines.
+The script contains `TODO` comments above the part you need to modify.
+
+After you are done with the modifications, just run the script:
+```sh
+$RESYNC/set_replicas.sh
+```
+
+To check that the script worked properly you can run
+```sh
+$RESYNC/findId.sh
+```
+The command should ouput the ID of the replica, a number between 0 and 8.
 
 
 ### Install PSync
 
 This covers both ReSync and PSync.
 
-... work around for security cert on debian
-... java, sbt, generateClassPath.sh, generateCerts.sh, local test, distributed test
+1. Installing and build PSync:
+   ```sh
+   git clone https://github.com/dzufferey/psync.git
+   cd psync
+   sbt compile
+   sbt test:compile
+   ./utils/generateClassPath.sh
+   ```
+2. Local test run, part 1
+   ```sh
+   ./test_scripts/testLV.sh
+   ```
+   The test runs for about 1 minute and the output should looks like
+   ```
+   running 3 LV replicas for 60 seconds
+   stopping ...
+   #instances = 211178, Δt = 58, throughput = 3641
+   #instances = 211285, Δt = 58, throughput = 3642
+   #instances = 211189, Δt = 58, throughput = 3641
+   ```
+   It is likely that the test will produce warnings like
+   ```
+   [Warning] @ TcpRuntime: Couldn't connect, trying again...
+   [Warning] @ Algorithm: processPool is running low
+   ```
+   during the run and after `stopping ...` there can be outputs like
+   ```
+   [Warning] @ TcpRuntime: Tried to send packet to 1, but no channel was available.
+   java.lang.AssertionError: assertion failed
+   ```
+   Warnings are harmless and serves as indication of places when the runtime can be improved (better resource managemenet, graceful shutdown, etc.).
 
+   On recent version of java, you may see
+   ```
+   WARNING: An illegal reflective access operation has occurred
+   WARNING: Illegal reflective access by com.esotericsoftware.kryo.util.UnsafeUtil (file:/home/zufferey/.cache/coursier/v1/https/repo1.maven.org/maven2/com/esotericsoftware/kryo-shaded/4.0.2/kryo-shaded-4.0.2.jar) to constructor java.nio.DirectByteBuffer(long,int,java.lang.Object)
+   WARNING: Please consider reporting this to the maintainers of com.esotericsoftware.kryo.util.UnsafeUtil
+   WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+   WARNING: All illegal access operations will be denied in a future release
+   ```
+   This can also be ignored.
+   The library we use for serialization ([twitter chill](https://github.com/twitter/chill)) uses some deprecated features of the JVM.
+2. Local test run, part 2
+   ```sh
+   ./test_scripts/testTempByzantine.sh
+   ```
+   The test runs for about 1 minute.
+   Similar as before it can produce a fair amount of output and errors _after `stopping ...`_.
+   This test checks that secure connection can be established between replicas.
+   If this fails with errors related to java security, this can usually be fixed by editing the `.jvmopts` in the psync folder and adding the following lines:
+   ```
+   -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts
+   -Djavax.net.ssl.trustStorePassword=changeit
+   -Djavax.net.ssl.trustStoreType=JKS
+   ```
+3. Distributed test run:
+   ...
 
 TODO give md5sum/hash of commits files
 
@@ -94,67 +208,88 @@ TODO give md5sum/hash of commits files
 
 To install LibPaxos3, we follow the instructions from https://bitbucket.org/sciascid/libpaxos/src/master/
 
-1. installing the dependencies: gcc make cmake libevent msgpack
-    ```sh
-    sudo apt install build-essential cmake libevent-dev libmsgpack-dev
-    ```
-2. building LibPaxos3
-    ```sh
-    git clone https://bitbucket.org/sciascid/libpaxos.git
-    mkdir libpaxos/build
-    cd libpaxos/build
-    cmake ..
-    make
-    ```
-3. local test run
+1. building LibPaxos3
+   ```sh
+   git clone https://bitbucket.org/sciascid/libpaxos.git
+   mkdir libpaxos/build
+   cd libpaxos/build
+   cmake ..
+   make
+   ```
+2. local test run
     ```sh
     cd libpaxos/build
-    ./sample/acceptor 0 ../paxos.conf > /dev/null &
-    ./sample/acceptor 1 ../paxos.conf > /dev/null &
     ./sample/proposer 0 ../paxos.conf > /dev/null &
-    ./sample/learner ../paxos.conf > learner.txt &
-    ./sample/client 127.0.0.1:5550 1
+    ./sample/acceptor 1 ../paxos.conf > /dev/null &
+    ./sample/acceptor 2 ../paxos.conf > /dev/null &
+    ./sample/client ../paxos.conf -p 0 &
+    sleep 10; killall client proposer acceptor
     ```
-4. distributed test run
+    The last command let the processes run for 10 seconds and then kill them.
+    The output should look like
+    ```
+    06 Aug 15:49:51. Connect to 127.0.0.1:8801
+    06 Aug 15:49:51. Connect to 127.0.0.1:8802
+    Connected to proposer
+    06 Aug 15:49:51. Connected to 127.0.0.1:8800
+    06 Aug 15:49:51. Connected to 127.0.0.1:8801
+    06 Aug 15:49:51. Connected to 127.0.0.1:8802
+    3239 value/sec, 2.37 Mbps, latency min 182 us max 1117 us avg 301 us
+    3138 value/sec, 2.30 Mbps, latency min 210 us max 674 us avg 345 us
+    3019 value/sec, 2.21 Mbps, latency min 232 us max 607 us avg 377 us
+    3047 value/sec, 2.23 Mbps, latency min 236 us max 507 us avg 305 us
+    3057 value/sec, 2.24 Mbps, latency min 236 us max 1059 us avg 338 us
+    3061 value/sec, 2.24 Mbps, latency min 234 us max 617 us avg 317 us
+    3043 value/sec, 2.23 Mbps, latency min 237 us max 569 us avg 316 us
+    2935 value/sec, 2.15 Mbps, latency min 233 us max 545 us avg 326 us
+    2982 value/sec, 2.18 Mbps, latency min 234 us max 1457 us avg 314 us
+    3055 value/sec, 2.24 Mbps, latency min 224 us max 583 us avg 326 us
+    [1]   Terminated              ./sample/acceptor 1 ../paxos.conf > /dev/null
+    [2]   Terminated              ./sample/acceptor 2 ../paxos.conf > /dev/null
+    [3]-  Terminated              ./sample/proposer 0 ../paxos.conf > /dev/null
+    [4]+  Terminated              ./sample/client ../paxos.conf -p 0
+    ```
+3. distributed test run
+    ```sh
+    cd libpaxos/build
+    ```
    TODO ...
+
+TODO give md5sum/hash of commits files
 
 ### Install etcd
 
-1. install dependencies:
+1. We install etcd following the instructions at [https://github.com/etcd-io/etcd/releases]().
+   First, you can edit the script `$RESYNC/etcd/setup.sh` and change the destination folder (`ETCDDIR`) if you wish.
+   Then execute:
    ```sh
-   sudo apt install curl golang
+   $RESYNC/etcd/setup.sh
+   $RESYNC/etcd/get_etcd.sh
    ```
-   etcd requires a fairly recent version of go.
-   If you use debian stable, you need to install go manually by following the instructions at [https://golang.org/doc/install]().
-2. install etcd following the instructions at [https://github.com/etcd-io/etcd/releases]().
-   TODO which version ...
-3. local test run
-   TODO ...
-4. distributed test run
+   This install the latest version of etcd (3.4.10 when writting this).
+2. local test run
+   ```sh
+   # start a local etcd server
+   $ETCDDIR/etcd-download-test/etcd
+
+   # write,read to etcd
+   $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar
+   $ETCDDIR/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo
+   ```
+3. distributed test run
    TODO ...
 
 ### Install Goolong
 
-To 
+To install and run Goolong, we follow the information from https://github.com/gleissen/goolong/ and https://goto.ucsd.edu/~rkici/popl19_artifact_evaluation/.
 
-repo https://github.com/gleissen/goolong/
-and instructions https://goto.ucsd.edu/~rkici/popl19_artifact_evaluation/
-
-1. install zsh and make:
-   ```sh
-   sudo apt install zsh make
-   ```
-2. install go using your package manager or following the instructions at [https://golang.org/doc/install]()
-   ```sh
-   sudo apt install golang
-   ```
-3. clone and build goolong
+1. clone and build goolong
    ```sh
    git clone https://github.com/gleissen/goolong.git
    cd goolong
    make
    ```
-4. local test run
+2. local test run
    ```
    ./run_paxos.sh
    ```
@@ -162,31 +297,22 @@ and instructions https://goto.ucsd.edu/~rkici/popl19_artifact_evaluation/
    ```
    FIXME
    ```
-5. distributed test run.
-   for this test, we will create a few configuration and helper scripts.
-
-TODO ...
-info[3-9].sh
-run_server.sh
-run_client.sh
+3. distributed test run.
+   TODO ...
 
 
 ### Install Bft-SMaRt
 
 To install Bft-SMaRt, we follow the instructions from https://github.com/bft-smart/library
 
-1. Install dependencies
-   ```sh
-   sudo apt install default-jdk ant wget
-   ```
-2. Download and ant Bft-SMaRt
+1. Download and ant Bft-SMaRt
    ```sh
    wget https://github.com/bft-smart/library/archive/v1.2.tar.gz
    tar -xzf library-1.2.tar.gz
    cd library-1.2
    ant
    ```
-3. local test run
+2. local test run
   - edit the configuration file `config/hosts.config` so it contains
     ```
     #server id, address and port (the ids from 0 to n-1 are the service replicas)
@@ -207,7 +333,7 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
     ./runscripts/smartrun.sh bftsmart.demo.counter.CounterClient 1001 1 1000
     ```
     TODO what the output should look like
-4. distributed test run
+3. distributed test run
    TODO ...
 
 ## Step by Step Instructions
