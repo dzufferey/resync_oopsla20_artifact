@@ -2,7 +2,9 @@
 
 rm -rf ~/etcd_storage/data
 
-exec $ETCD/bin/etcd --name s1 \
+id=$((`$RESYNC/findId.sh` + 1))
+
+exec $ETCD/bin/etcd --name s$id \
 	--data-dir ~/etcd_storage/data \
 	--listen-client-urls http://REPLICA0:2379 \
 	--advertise-client-urls http://REPLICA0:2379 \
