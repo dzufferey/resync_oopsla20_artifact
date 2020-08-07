@@ -11,6 +11,7 @@
     <param> <name>batch</name> <value>1300</value> </param>
     <param> <name>cr</name> <value>13000</value> </param>
     <param> <name>pending</name> <value>10</value> </param>
+    <param> <name>forwarding</name> <value>false</value> </param>
   </parameters>
   <peers>
     <replica> <id>0</id> <address>REPLICA0</address> <port>4444</port> </replica>

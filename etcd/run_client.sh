@@ -3,8 +3,8 @@
 
 NBCON=10
 NBCLI=1000
-NBOPS=1000
-REQSIZE=32768
+NBOPS=50000
+REQSIZE=32760 #8 bytes short of 32KB as the keyy is 8 bytes
 
 while getopts 'c:t:o:s:' option
 do
