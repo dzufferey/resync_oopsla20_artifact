@@ -35,7 +35,7 @@ done
 # kill all lingering processes
 killall -9 multipaxos
 
-i=0
+i=`$RESYNC/findId.sh`
 
 echo replica $i
 

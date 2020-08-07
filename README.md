@@ -72,6 +72,19 @@ cssh resync
 
 From now on, you should connect to the test machines and the rest of the setup occurs there.
 
+#### Recommended way to run commands
+
+Installing the tools has to be done with on the 9 test machines.
+During the installation, there will be _local test run_ and _distribtuted test run_.
+The local test run check that the tools are installed properly by running everything on the same machine.
+The distributed test runs the tool accross machines.
+This serves to test that the tools are configured properly and the machine can connect to each other.
+
+Some tools requires an extra "client" to drive the test.
+The main program is a replicated server which runs of all the machine and client makes request to evaluate the system throughput.
+For such cases, the simplest is to open an extra ssh connection to one of the test machine (we recommend `REPLICA0`, see configuration below) and run the client there.
+
+
 ### Install dependencies
 
 The tools we use have some external dependencies and we group their installation here.
@@ -151,7 +164,7 @@ If you did an error, you can reset the state of the repo with `git checkout .` a
 
 This covers both ReSync and PSync.
 
-1. Installing and build PSync:
+1. __Building PSync.__
    ```sh
    git clone https://github.com/dzufferey/psync.git
    cd psync
@@ -161,7 +174,7 @@ This covers both ReSync and PSync.
    export PSYNC=$PWD
    echo "export PSYNC=$PWD" >> ~/.bashrc
    ```
-2. Local test run, part 1
+2. __Local test run, part 1.__
    ```sh
    # from the psync folder
    ./test_scripts/testLV.sh
@@ -196,7 +209,7 @@ This covers both ReSync and PSync.
    ```
    This can also be ignored.
    The library we use for serialization ([twitter chill](https://github.com/twitter/chill)) uses some deprecated features of the JVM.
-2. Local test run, part 2
+2. __Local test run, part 2.__
    ```sh
    # from the psync folder
    ./test_scripts/testTempByzantine.sh
@@ -210,7 +223,7 @@ This covers both ReSync and PSync.
    -Djavax.net.ssl.trustStorePassword=changeit
    -Djavax.net.ssl.trustStoreType=JKS
    ```
-3. Distributed test run:
+3. __Distributed test run.__
    on the 9 test machines at the same time, run the following command:
    ```sh
    $RESYNC/psync/testTwoPhaseCommit.sh
@@ -222,7 +235,7 @@ TODO give md5sum/hash of commits files
 
 To install LibPaxos3, we follow the instructions from https://bitbucket.org/sciascid/libpaxos/src/master/
 
-1. building LibPaxos3
+1. __Building LibPaxos3.__
    ```sh
    git clone https://bitbucket.org/sciascid/libpaxos.git
    mkdir libpaxos/build
@@ -232,7 +245,7 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    export LPAXOS=$PWD
    echo "export LPAXOS=$PWD" >> ~/.bashrc
    ```
-2. local test run
+2. __Local test run.__
    ```sh
    # from the libpaxos/build folder
    ./sample/proposer 0 ../paxos.conf > /dev/null &
@@ -265,18 +278,51 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    [3]-  Terminated              ./sample/proposer 0 ../paxos.conf > /dev/null
    [4]+  Terminated              ./sample/client ../paxos.conf -p 0
    ```
-3. distributed test run
+3. __Distributed test run.__
+   On the 9 test machine, run the server programs
    ```sh
-   # from the libpaxos/build folder
+   cd $RESYNC/libpaxos3
+   ./run_replicas.sh -n 9
+   ```
+   On one of the machine, run the client program
+   ```sh
+   cd $RESYNC/libpaxos3
+   ./run_client.sh -n 9
+   ```
+   The client procduces an output which looks like
+   ```
+   07 Aug 09:19:01. Connect to 139.19.162.64:8800
+   07 Aug 09:19:01. Connect to 139.19.162.65:8800
+   07 Aug 09:19:01. Connect to 139.19.162.66:8800
+   07 Aug 09:19:01. Connect to 139.19.162.67:8800
+   07 Aug 09:19:01. Connect to 139.19.162.68:8800
+   07 Aug 09:19:01. Connect to 139.19.162.69:8800
+   07 Aug 09:19:01. Connect to 139.19.162.17:8800
+   07 Aug 09:19:01. Connect to 139.19.162.18:8800
+   07 Aug 09:19:01. Connect to 139.19.162.19:8800
+   Connected to proposer
+   07 Aug 09:19:02. Connected to 139.19.162.64:8800
+   07 Aug 09:19:02. Connected to 139.19.162.65:8800
+   07 Aug 09:19:02. Connected to 139.19.162.66:8800
+   07 Aug 09:19:02. Connected to 139.19.162.67:8800
+   07 Aug 09:19:02. Connected to 139.19.162.68:8800
+   07 Aug 09:19:02. Connected to 139.19.162.69:8800
+   07 Aug 09:19:02. Connected to 139.19.162.18:8800
+   07 Aug 09:19:02. Connected to 139.19.162.19:8800
+   07 Aug 09:19:02. Connected to 139.19.162.17:8800
+   205 value/sec, 51.30 Mbps, latency min 86151 us max 608868 us avg 401983 us
+   250 value/sec, 62.56 Mbps, latency min 240438 us max 517487 us avg 377810 us
+   275 value/sec, 68.82 Mbps, latency min 332199 us max 409198 us avg 370590 us
    ...
    ```
-   TODO ...
+   You can then stop the client and server (`CTRL+C`).
 
 TODO give md5sum/hash of commits files
 
 ### Install etcd
 
-1. We install etcd from source as the benchmarking tool for etcd does not come with the standard installation.
+1. __Building etcd.__
+   We install etcd from source as the benchmarking tool for etcd does not come with the standard installation.
    The last verison of etcd to build with go 1.13 is etcd 3.4.9.
    ```sh
    git clone https://github.com/etcd-io/etcd.git
@@ -289,7 +335,7 @@ TODO give md5sum/hash of commits files
    echo "export ETCD=$PWD" >> ~/.bashrc
    ```
    This install the latest version of etcd (3.4.10 when writting this).
-3. local test run
+2. __Local test run.__
    ```sh
    # from the etcd directory
    ./bin/etcd &
@@ -306,14 +352,77 @@ TODO give md5sum/hash of commits files
    foo
    bar
    ```
-4. distributed test run
-   TODO ...
+3. __Distributed test run.__
+   On the 9 test machine, run the server programs
+   ```sh
+   cd $RESYNC/etcd
+   ./etcd_test_9.sh
+   ```
+   On one of the machine, run the benchmark program
+   ```sh
+   cd $RESYNC/etcd
+   ./run_client.sh
+   ```
+   The benchmark procduces an output which looks like
+   ```
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+   INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
+   INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
+    10000 / 10000 Booooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo! 100.00% 1s
+
+   Summary:
+     Total:	1.4784 secs.
+     Slowest:	0.2263 secs.
+     Fastest:	0.0406 secs.
+     Average:	0.1449 secs.
+     Stddev:	0.0291 secs.
+     Requests/sec:	6763.9660
+
+   Response time histogram:
+     0.0406 [1]	|
+     0.0591 [5]	|
+     0.0777 [14]	|
+     0.0963 [1177]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+     0.1149 [67]	|
+     0.1334 [1632]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+     0.1520 [2543]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+     0.1706 [2879]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+     0.1891 [1234]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+     0.2077 [402]	|∎∎∎∎∎
+     0.2263 [46]	|
+
+   Latency distribution:
+     10% in 0.0906 secs.
+     25% in 0.1311 secs.
+     50% in 0.1439 secs.
+     75% in 0.1651 secs.
+     90% in 0.1799 secs.
+     95% in 0.1844 secs.
+     99% in 0.2045 secs.
+     99.9% in 0.2127 secs.
+   ```
+   You can then stop the etcd server (`CTRL+C`).
 
 ### Install Goolong
 
 To install and run Goolong, we follow the information from https://github.com/gleissen/goolong/ and https://goto.ucsd.edu/~rkici/popl19_artifact_evaluation/.
 
-1. clone and build goolong
+1. __Building Goolong.__
    ```sh
    git clone https://github.com/gleissen/goolong.git
    cd goolong
@@ -326,7 +435,7 @@ To install and run Goolong, we follow the information from https://github.com/gl
    export GOOLONG=$PWD
    echo "export GOOLONG=$PWD" >> ~/.bashrc
    ```
-2. local test run
+2. __Local test run.__
    running
    ```sh
    # in the goolong folder
@@ -381,15 +490,45 @@ To install and run Goolong, we follow the information from https://github.com/gl
    Caught signal; exiting
    DONE !
    ```
-3. distributed test run.
-   TODO ...
+3. __Distributed test run.__
+   On the 9 test machine, run the server programs
+   ```sh
+   cd $RESYNC/goolong
+   ./run_server.sh -n 9
+   ```
+   On one of the machine, run the benchmark program
+   ```sh
+   cd $RESYNC/goolong
+   ./run_client.sh -n 9 -q 1000
+   ```
+   The client procduces an output which looks like
+   ```
+   using config file /root/resync_oopsla20_artifact/goolong/info9.sh
+   client: no process found
+   running client
+   /root/goolong/bin/client  -q 1000   srv-76-164.mpi-sws.org:7070 srv-76-165.mpi-sws.org:7070 srv-76-166.mpi-sws.org:7070 srv-76-167.mpi-sws.org:7070 srv-76-168.mpi-sws.org:7070 srv-76-169.mpi-sws.org:7070 srv-76-117.mpi-sws.org:7070 srv-76-118.mpi-sws.org:7070 srv-76-119.mpi-sws.org:7070
+   Connecting to replicas..
+   Done connecting to 0
+   Done connecting to 1
+   Done connecting to 2
+   Done connecting to 3
+   Done connecting to 4
+   Done connecting to 5
+   Done connecting to 6
+   Done connecting to 7
+   Done connecting to 8
+   Connected to replicas: readers are [0xc00008a540 0xc000154000 0xc000194000 0xc00008a780 0xc000194240 0xc000194420 0xc00008a9c0 0xc0001181e0 0xc00008ac00] .
+   Round took 6.483281643
+   Test took 6.483313495
+   Successful: 1000
+   ```
 
 
 ### Install Bft-SMaRt
 
 To install Bft-SMaRt, we follow the instructions from https://github.com/bft-smart/library
 
-1. Download and ant Bft-SMaRt
+1. __Building Bft-SMaRt.__
    ```sh
    wget https://github.com/bft-smart/library/archive/v1.2.tar.gz
    tar -xzf v1.2.tar.gz
@@ -398,7 +537,7 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
    export BFTS=$PWD
    echo "export BFTS=$PWD" >> ~/.bashrc
    ```
-2. local test run
+2. __Local test run.__
   - edit the configuration file `config/hosts.config` so it contains
     ```
     #server id, address and port (the ids from 0 to n-1 are the service replicas)
@@ -418,8 +557,21 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
     sleep 10; killall java
     ```
     The test produce a fair amount of output related to the client invoking and increment counter operation and the replicas print their state (`---------- DEBUG INFO ----------`) just before exiting.
-3. distributed test run
+3. __Distributed test run.__
+   On the 9 test machine, run the server programs
+   ```sh
+   cd $RESYNC/bft-smart
+   ./run_server.sh -n 9
+   ```
+   On one of the machine, run the benchmark program
+   ```sh
+   cd $RESYNC/bft-smart
+   ./run_client.sh
+   ```
+   The client procduces an output which looks like
+   ```
    TODO ...
+   ```
 
 ## Step by Step Instructions
 
@@ -431,6 +583,8 @@ We now explain how to reproduce the following
 4. Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
 5. Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
+TODO explain how to toggle replicas in clusterssh
+
 TODO for each test
 - how to run (configuration files, scripts)
 - how to interpret the output (compute throughput, etc.)
@@ -441,51 +595,122 @@ TODO for each test
 #### ReSync
 
 ```
-./test_scripts/testBLV.sh --conf $RESYNC/batching/3replicas-conf.xml -to 5 --cr 2700
-./test_scripts/testBLV.sh --conf $RESYNC/batching/4replicas-conf.xml -to 5 --cr 2700
-./test_scripts/testBLV.sh --conf $RESYNC/batching/5replicas-conf.xml -to 5 --cr 2700
-./test_scripts/testBLV.sh --conf $RESYNC/batching/6replicas-conf.xml -to 5 --cr 2700
-./test_scripts/testBLV.sh --conf $RESYNC/batching/7replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
-./test_scripts/testBLV.sh --conf $RESYNC/batching/8replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
-./test_scripts/testBLV.sh --conf $RESYNC/batching/9replicas-conf.xml -to 5 --cr 2700 (reduced cr or fewer forward)
+cd $RESYNC/psync
+./testBatching.sh --conf batching/3replicas-conf.xml
+./testBatching.sh --conf batching/4replicas-conf.xml
+./testBatching.sh --conf batching/5replicas-conf.xml
+./testBatching.sh --conf batching/6replicas-conf.xml
+./testBatching.sh --conf batching/7replicas-conf.xml
+./testBatching.sh --conf batching/8replicas-conf.xml
+./testBatching.sh --conf batching/9replicas-conf.xml
 ```
 
 #### PSync
 
 ```
-./test_scripts/testBLV.sh --conf 3replicas-conf.xml -to 2 --cr 1200  --syncTO
-./test_scripts/testBLV.sh --conf 4replicas-conf.xml -to 3 --cr 800  --syncTO
-./test_scripts/testBLV.sh --conf 5replicas-conf.xml -to 4 --cr 700  --syncTO
-./test_scripts/testBLV.sh --conf 6replicas-conf.xml -to 3 --cr 600 --syncTO
-./test_scripts/testBLV.sh --conf 7replicas-conf.xml -to 3 --cr 400 --syncTO
-./test_scripts/testBLV.sh --conf 8replicas-conf.xml -to 4 --cr 300 --syncTO
-./test_scripts/testBLV.sh --conf 9replicas-conf.xml -to 5 --cr 300 --syncTO
+cd $RESYNC/psync
+./testBatching.sh --conf batching/3replicas-conf.xml --syncTO -to 2 --cr 1200
+./testBatching.sh --conf batching/4replicas-conf.xml --syncTO -to 3 --cr 800
+./testBatching.sh --conf batching/5replicas-conf.xml --syncTO -to 4 --cr 700
+./testBatching.sh --conf batching/6replicas-conf.xml --syncTO -to 3 --cr 600
+./testBatching.sh --conf batching/7replicas-conf.xml --syncTO -to 3 --cr 400
+./testBatching.sh --conf batching/8replicas-conf.xml --syncTO -to 4 --cr 300
+./testBatching.sh --conf batching/9replicas-conf.xml --syncTO -to 5 --cr 300
 ```
 
 
 #### LibPaxos3
 
+Running the tests is similar to the distributed test run but varying the number of replicas from 3 to 9.
+The commands are:
+
+* servers:
+  ```sh
+  # run on $n server (replicas with id 0 to n-1)
+  cd $RESYNC/libpaxos3
+  n=9 #in the range [3,9]
+  ./run_replicas.sh -n $n
+  ```
+* client:
+  ```sh
+  # run the client
+  cd $RESYNC/libpaxos3
+  n=9 #in the range [3,9]
+  ./run_client.sh -n $n
+  ```
+
+__Computing the throughput.__
+The client produces an output of resembling:
 ```
-libpaxos 3 on mpi_9
--- for the server
-cd dz_xp/libpaxos/build
-./run_replicas.sh -n 9
--- for the client
-cd dz_xp/libpaxos/build
-./sample/client paxos9.conf -o 1000 -p 0 -v 8192
-./sample/client paxos9.conf -o 100 -p 0 -v 32768
+205 value/sec, 51.30 Mbps, latency min 86151 us max 608868 us avg 401983 us
 ```
+Let the client run for a while, collect the `Mbps` values and average them.
+Notive that the script output `Mbps` not `MB/s`  (bits not bytes).
+To obtain the final throughput, the value in `Mbps` needs to be divided by 8.
+
+__Options.__
+The script `run_client.sh` runs the client making requests of 32KB (option `-v 32768`) with 100 outstanding requests (option `-o 100`).
+The large request size matches the batching used by other tools.
+The number of outstanding request allow libpaxos3 to use bandwidth more efficiently.
+Varing these options can increase or decrease the system throughput.
 
 #### etcd
+
+Running the tests is similar to the distributed test run but varying the number of replicas from 3 to 9.
+The commands are:
+* servers:
+  ```sh
+  # run on $n server (replicas with id 0 to n-1)
+  cd $RESYNC/etcd
+  n=9 #in the range [3,9]
+  ./etcd_test_$n.sh
+  ```
+* client:
+  ```sh
+  # run the client
+  cd $RESYNC/etcd
+  ./run_client.sh
+  ```
+
+TODO client options
 
 ... https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/performance.md#benchmarks
 
 #### Goolong
 
+Running the tests is similar to the distributed test run but varying the number of replicas from 3 to 9.
+The commands are:
+
+* servers:
+  ```sh
+  # run on $n server (replicas with id 0 to n-1)
+  cd $RESYNC/goolong
+  n=9 #in the range [3,9]
+  ./run_replicas.sh -n $n -b
+  ```
+* client:
+  ```sh
+  # run the client
+  cd $RESYNC/goolong
+  n=9 #in the range [3,9]
+  ./run_client.sh -n $n -q 10000000
+  ```
+
+__Computing the throughput.__
+To compute the throughput, we need to get the following two lines from the client output:
 ```
--> run_server.sh -n N -b
--> run_client.sh -n N -q 10000000
+Round took 202.540084681
+Test took 202.540147648
+Successful: 10000000
 ```
+The first line is the duration of the test and the last line is the number of requests.
+A request in Goolong take 21 bytes of data over the wires.
+We can compute the throughput in MB/s as `#request * 21 / #time / (1024 * 1024)`.
+In this case, we get ~ 1MB/s
+
+__Options.__
+The `run_replicas.sh` script needs to run with `-b` to enable batching.
+The `run_client.sh` script takes as parameter the number of requests.
 
 ### Byzantine test: ReSync against Bft-SMaRt (Figure 8b)
 
@@ -504,49 +729,52 @@ n = 4 -> 8.15 (712k) -to 200
 
 #### Bft-SMaRt
 
+Running the tests is similar to the distributed test run but varying the number of replicas from 4 to 9.
+For the server, there is nothing special to do.
+However, for the client there are options which influence the performances.
+Here, we give the options that worked best for us.
+
+The commands are:
+* servers:
+  ```sh
+  cd $RESYNC/bft-smart
+  n=9 #in the range [4,9]
+  ./run_server.sh -n $n
+  ```
+* client:
+  ```sh
+  cd $RESYNC/bft-smart
+  # for $n = 9
+  ./run_client.sh -t 7 -o 10000 -s 2048
+  # for $n = 8
+  ./run_client.sh -t 12 -o 10000 -s 2048
+  # for $n = 7
+  ./run_client.sh -t 16 -o 8000 -s 4096
+  # for $n = 6
+  ./run_client.sh -t 13 -o 8000 -s 8192
+  # for $n = 5
+  ./run_client.sh -t 14 -o 8000 -s 16384
+  # for $n = 4
+  ./run_client.sh -t 16 -o 8000 -s 16384
+  ```
+
+__Options.__
+The `run_client.sh` script has three options:
+- `t`: the number of client (threads) makeing request in parallel
+- `o`: the number of operation per client
+- `s`: the size of a request
+Varying these options will affect the performances.
+
+__Computing the throughput.__
+
+TODO `#requestPerSecond * requestSize / (1024*1024)`
 ```
-n = 9, f = 2
-./run_client.sh -t 7[8] -o10000 -s 1536
-1536 × 2135 ÷ 1024 ÷ 1024 = 3.13
-./run_client.sh -t 7 -o 10000 -s 2048
-2048 × 1850 ÷ 1024 ÷ 1024 = 3.61
-------
-
-n = 8, f = 2
-./run_client.sh -t 12 -o 10000 -s 1536
-1536 × 3000 ÷ 1024 ÷ 1024 = 4.39
-./run_client.sh -t 12 -o 10000 -s 2048
-2048 × 2450 ÷ 1024 ÷ 1024 = 4.79
-
-------
-
-n = 7, f = 2
-./run_client.sh -t 14 -o 20000 -s 2048
-2048 × 3000 ÷ 1024 ÷ 1024 = 5.86
-./run_client.sh -t 16 -o 8000 -s 4096
-4096 × 2200 ÷ 1024 ÷ 1024 = 8.59
-./run_client.sh -t 10 -o 8000 -s 8192
-8192 × 1100 ÷ 1024 ÷ 1024 = 8.59
-
----
-
-n = 6, f = 1
-./run_client.sh -t 13 -o 8000 -s 8192
-8192 × 1300 ÷ 1024 ÷ 1024 = 10.16
-
-----
-
-n = 5, f = 1
-./run_client.sh -t 16 -o 8000 -s 8192
-8192 × 1450 ÷ 1024 ÷ 1024 = 11.32
-./run_client.sh -t 14 -o 8000 -s 16384
-16384 ÷ 1024 ÷ 1024 × 760 = 11.86
-
-----
-
-n = 4, f = 1
-./run_client.sh -t 16 -o 8000 -s 16384
-16384 × 900 ÷ 1024 ÷ 1024 = 14.06
+n = 9, f = 2 →  1850 ×  2048 ÷ 1024 ÷ 1024 = 3.61
+n = 8, f = 2 →  2450 ×  2048 ÷ 1024 ÷ 1024 = 4.79
+n = 7, f = 2 →  2200 ×  4096 ÷ 1024 ÷ 1024 = 8.59
+n = 6, f = 1 →  1300 ×  8192 ÷ 1024 ÷ 1024 = 10.16
+n = 5, f = 1 →   760 × 16384 ÷ 1024 ÷ 1024 = 11.86
+n = 4, f = 1 →   900 × 16384 ÷ 1024 ÷ 1024 = 14.06
 ```
 
 

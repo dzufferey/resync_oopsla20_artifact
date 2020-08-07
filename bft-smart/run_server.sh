@@ -21,13 +21,13 @@ if [ -f $BFTS/config/hosts.config ]; then
 	rm $BFTS/config/hosts.config
 fi
 echo "removing repalcing hosts.config by $conf"
-cp $RESYNC/config/$conf $BFTS/config/hosts.config
+cp $RESYNC/bft-smart/config/$conf $BFTS/config/hosts.config
 
 if [ -f $BFTS/config/system.config ]; then
 	rm $BFTS/config/system.config
 fi
 echo "removing repalcing system.config by $syst"
-cp $RESYNC/config/$syst $BFTS/config/system.config
+cp $RESYNC/bft-smart/config/$syst $BFTS/config/system.config
 
 # trap CTRL-C input, and kill every process created
 trap "pkill -P $$; sleep 1; exit 1;" INT
