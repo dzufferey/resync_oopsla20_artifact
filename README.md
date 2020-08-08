@@ -6,8 +6,8 @@ Documentation to reproduce the experiments from the paper "Programming at the Ed
 
 This artifacts explain how to run ReSync and the other tools against which we compare.
 To goal of the artifact is to reproduce the figures in Section 6 of the paper.
-
-TODO we try to use the latest available version of the tools against which we compare.
+Some tools are available in newer versions since we originally ran the tests.
+Here we try to use the more recent versions when possible.
 
 ### Software Setup
 
@@ -27,14 +27,15 @@ We will use that option when comparing PSync and ReSync.
 ### Hardware Setup
 
 Running the experiments requires having access to 9 machines.
-It is possible to run on fewer machines by running multiple processes on the same machine but this will affect the results.
+It is possible to run on fewer machines by running multiple processes on the fewer machines but this will affect the results.
 
-The performance numbers will vary depending on the deployment and requires tuning some parameters.
+The performance numbers will vary depending on the deployment (machines, network, etc.) and requires tuning some parameters.
+However, the trends shown in the paper should be the same.
+Their can be variability between test run so each test can be run a few time and the results averaged.
 If you want to witness ReSync running the machines used to get the numbers in the paper, please contact Damien Zufferey (zufferey@mpi-sws.org) for a demonstration.
 
 
 ## Getting Started Guide
-
 
 1. Install clusterssh (optional but really helpful later)
 2. Install dependencies
@@ -47,6 +48,9 @@ If you want to witness ReSync running the machines used to get the numbers in th
 
 Except for clusterssh, all the other tools should be installed on all the machines running the tests.
 clusterssh is installed on the machine the perform running the tests.
+
+During the installation, we set some environment variables: `$RESYNC`, `$PSYNC`, `$LPAXOS`, `$ETCD`, `$GOOLONG`, and `$BFTS`.
+These variables are important as the scripts running the experiments use them.
 
 ### Install clusterssh
 
@@ -97,21 +101,23 @@ Here are the command to install the dependencies.
   ```sh
   sudo apt install build-essential cmake libevent-dev libmsgpack-dev
   ```
-* Java: Bft-SMaRt and PSync need Java
+* Java is needed by Bft-SMaRt:
   ```sh
   sudo apt install default-jdk ant
   ```
   We run our tests with OpendJDK 8 but it should work for higher versions.
-* Scala: PSync needs scala on to of java. [sbt](https://www.scala-sbt.org/) takes care of building everything.
+* Scala is used by PSync.
+  [sbt](https://www.scala-sbt.org/) takes care of building everything.
   ```sh
   echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
   curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add
   sudo apt-get update
   sudo apt-get install sbt
   ```
-* Go is needed for etcd and Goolong
-  etcd requires a fairly recent version of go.
-  If you use Ubuntu 20.04, you can do
+* Go is needed for etcd and Goolong.
+  etcd requires a recent version of go but [Goolong does not work with go 1.14](https://github.com/gleissen/goolong/issues/2).
+  Therefore, we recommend using go version 1.13.
+  If you use Ubuntu 20.04, you can do:
   ```sh
   sudo apt install golang
   ```
@@ -122,7 +128,6 @@ Here are the command to install the dependencies.
   export PATH=$PATH:/usr/local/go/bin
   echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
   ```
-  [Goolong does not work with go 1.14](https://github.com/gleissen/goolong/issues/2), so the version 1.13 is needed.
 
 ### Clone the artifact repo
 
@@ -174,7 +179,8 @@ This covers both ReSync and PSync.
    export PSYNC=$PWD
    echo "export PSYNC=$PWD" >> ~/.bashrc
    ```
-   TODO hash of the HEAD
+   The hash of the commit we use is `23c4c1003de729898b1b52ae1fc6edf802c9790d`.
+   (Obtained by running the command `git rev-parse HEAD`.)
 2. __Local test run, part 1.__
    ```sh
    # from the psync folder
@@ -578,8 +584,35 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
    ```
    The client produces an output which looks like
    ```
-   TODO ...
+   Launching client 1001
+   -- Connecting to replica 0 at /139.19.162.64:8800
+   -- Channel active
+   -- Connecting to replica 1 at /139.19.162.65:8800
+   -- Channel active
+   -- Connecting to replica 2 at /139.19.162.66:8700
+   -- Channel active
+   -- Connecting to replica 3 at /139.19.162.67:8800
+   -- Channel active
+   -- Connecting to replica 4 at /139.19.162.68:8800
+   -- Channel active
+   -- Connecting to replica 5 at /139.19.162.69:8800
+   -- Channel active
+   -- Connecting to replica 6 at /139.19.162.17:8800
+   -- Channel active
+   -- Connecting to replica 7 at /139.19.162.18:8800
+   -- Channel active
+   -- Connecting to replica 8 at /139.19.162.19:8800
+   -- Channel active
+   Warm up...
+   Executing experiment for 50000 ops
+   1001 // Average time for 50000 executions (-10%) = 2328.97341625 us 
+   1001 // Standard desviation for 50000 executions (-10%) = 63.90399681790985 us 
+   1001 // Average time for 50000 executions (all samples) = 2406.4735858999998 us 
+   1001 // Standard desviation for 50000 executions (all samples) = 10154.83171698794 us 
+   1001 // Maximum time for 50000 executions (all samples) = 1706460 us 
+   All clients done.
    ```
+   The server also print performances measurements.
 
 ## Step by Step Instructions
 
@@ -591,9 +624,15 @@ We now explain how to reproduce the following
 4. Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
 5. Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
-TODO explain how to toggle replicas in clusterssh
-Below, we try to summarize the commands with 
-When re
+Below, we summarize the commands with the parameters as variable.
+For instance, we write:
+```sh
+n=9 #in the range [3,9]
+```
+and use `$n` in the command.
+
+To run the test on fewer machine, the simples is to set the appropriate test value, e.g., `n=3`.
+When the number of machines changes, in the clusterssh `Hosts` menu it is possible to (de)activate a subset of the machines to which you are connected.
 
 
 ### Benign test: ReSync against LibPaxos3, etcd, Goolong and PSync (Figure 8a)
@@ -698,7 +737,7 @@ To obtain the final throughput, the value in `Mbps` needs to be divided by 8.
 __Options.__
 The script `run_client.sh` runs the client making requests of 32KB (option `-v 32768`) with 100 outstanding requests (option `-o 100`).
 The large request size matches the batching used by other tools.
-The number of outstanding request allow libpaxos3 to use bandwidth more efficiently.
+The number of outstanding request allow LibPaxos3 to use bandwidth more efficiently.
 Varying these options can increase or decrease the system throughput.
 
 #### etcd
@@ -831,26 +870,29 @@ The `run_client.sh` script has three options:
 Varying these options will affect the performances.
 
 __Computing the throughput.__
-
-TODO `#requestPerSecond * requestSize / (1024*1024)`
+When running the client, the server will print performance measurements periodically.
+The important lines are:
 ```
-n = 9, f = 2 →  1850 ×  2048 ÷ 1024 ÷ 1024 = 3.61
-n = 8, f = 2 →  2450 ×  2048 ÷ 1024 ÷ 1024 = 4.79
-n = 7, f = 2 →  2200 ×  4096 ÷ 1024 ÷ 1024 = 8.59
-n = 6, f = 1 →  1300 ×  8192 ÷ 1024 ÷ 1024 = 10.16
-n = 5, f = 1 →   760 × 16384 ÷ 1024 ÷ 1024 = 11.86
-n = 4, f = 1 →   900 × 16384 ÷ 1024 ÷ 1024 = 14.06
+Throughput = 1634.2539 operations/sec (Maximum observed: 1647.175 ops/sec)
 ```
+From this, we compute the throughput in MB/s with the following formula: `#ops/sec * request_size / (1024*1024)`.
+In that case if the client was
+```
+./run_client.sh -t 7 -o 10000 -s 2048
+```
+The request size is 2048 and we get a throughput of 3.3 MB/s.
 
 
 ### Comparing progress conditions for the two-phase commit protocol with TCP and a 5ms timeout (Figure 9a)
 
+As the previous experiments, the scrips are in the `psync` folder of the artifact and are run with different number of machines:
 ```sh
 # run on $n server (replicas with id 0 to n-1)
 cd $RESYNC/psync
 n=9 #in the range [3,9]
 ```
 
+The scripts for the two versions of two phase commit with different progress conditions are:
 * Wait all:
   ```sh
   ./testTwoPhaseCommit.sh --conf default/${n}replicas-conf.xml --all
@@ -860,6 +902,22 @@ n=9 #in the range [3,9]
   ```sh
   ./testTwoPhaseCommit.sh --conf default/${n}replicas-conf.xml
   ```
+
+__Computing the latency.__
+The replica with id 0 produces an output of the form:
+```
+...
+replica 0 starting with false
+dt = 2
+replica 0 decided Some(false)
+replica 0 starting with false
+dt = 3
+replica 0 decided Some(false)
+...
+```
+The `dt` is the latency measured by the coordinator process.
+We take the average of these values.
+
 
 ### Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
 
@@ -894,30 +952,47 @@ n=9 #in the range [3,9]
   ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 1 --syncTO
   ```
 
+The tests are designed to put stress on the runtime and the system can output messages of the form:
+```
+[Warning] @ Algorithm: processPool is running low
+```
+These messages are expected.
+
+__Computing the throughput.__
+At the end of the test, the replicas print
+```
+#instances = 387091, Δt = 64, throughput = 6048
+```
+The throughput there is in requests per second.
+It needs to be divided by 1000 to match the request per millisecond reported in the paper.
+
 ### Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
 ```sh
-# run on $n server (replicas with id 0 to n-1)
+# run on 9 server
 cd $RESYNC/psync
-n=9 #in the range [3,9]
+t=1 # in the set {1,2,3,5,10,20,50}
 ```
 
 * SW TCP:
   ```sh
-  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol TCP -rt 20
+  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol TCP -rt 20 -to $t
   ```
 * SW UDP
   ```sh
-  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol UDP -rt 20
+  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol UDP -rt 20 -to $t
   ```
 * Ser TCP
   ```sh
-  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol TCP -rt 1
+  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol TCP -rt 1 -to $t
   ```
 * Ser UDP
   ```sh
-  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol UDP -rt 1
+  ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol UDP -rt 1 -to $t
   ```
+
+__Computing the throughput.__
+Similar to the previous test.
 
 
 ## Scripts used to produce the plots in the paper
@@ -936,9 +1011,9 @@ Each figures has two files:
 The script `mk_figs.sh` produce the plots (`$NAME.pdf`) which are used in the paper.
 
 The filename match the figures in the paper as follows:
-* `lp3_gl_ed_z` is Figure 8a
-* `bft` is Figure 8b
-* `latency_2pc` is Figure 9a
-* `progress_lv` is Figure 9b
-* `timeout` is Figure 9c
+* `lp3_gl_ed_z` is Figure 8a;
+* `bft` is Figure 8b;
+* `latency_2pc` is Figure 9a;
+* `progress_lv` is Figure 9b;
+* `timeout` is Figure 9c.
 

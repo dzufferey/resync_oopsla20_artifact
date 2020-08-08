@@ -6,6 +6,8 @@
     <param> <name>protocol</name> <value>TCP</value> </param>
     <param> <name>timeout</name> <value>5</value> </param>
     <param> <name>group</name> <value>NIO</value> </param>
+    <param> <name>processPool</name> <value>128</value> </param>
+    <param> <name>bufferSize</name> <value>128</value> </param>
   </parameters>
   <peers>
     <replica> <id>0</id> <address>REPLICA0</address> <port>4444</port> </replica>
