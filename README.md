@@ -27,7 +27,7 @@ We use that option when comparing PSync and ReSync.
 ### Hardware Setup
 
 Running the experiments requires having access to 9 machines.
-It is possible to run on fewer machines by running multiple processes on the fewer machines but this will affect the results.
+It is possible to run on fewer machines by running multiple processes per machines but this will affect the results.
 
 The performance numbers will vary depending on the deployment (machines, network, etc.) and requires tuning some parameters.
 However, the trends shown in the paper should be the same.
@@ -78,7 +78,7 @@ From now on, you should connect to the test machines and the rest of the setup o
 #### Recommended way to run commands
 
 Installing the tools has to be done with on the 9 test machines.
-During the installation, there will be _local test run_ and _distribtuted test run_.
+During the installation, there will be _local test run_ and _distributed test run_.
 The local test run check that the tools are installed properly by running everything on the same machine.
 The distributed test runs the tool across machines.
 This serves to test that the tools are configured properly and the machine can connect to each other.
@@ -211,7 +211,7 @@ This covers both ReSync and PSync.
    ```
    This can also be ignored.
    The library we use for serialization ([twitter chill](https://github.com/twitter/chill)) uses some deprecated features of the JVM.
-2. __Local test run, part 2.__
+3. __Local test run, part 2.__
    ```sh
    # from the psync folder
    ./test_scripts/testTempByzantine.sh
@@ -225,7 +225,7 @@ This covers both ReSync and PSync.
    -Djavax.net.ssl.trustStorePassword=changeit
    -Djavax.net.ssl.trustStoreType=JKS
    ```
-3. __Distributed test run.__
+4. __Distributed test run.__
    on the 9 test machines at the same time, run the following command:
    ```sh
    $RESYNC/psync/testTwoPhaseCommit.sh
@@ -326,7 +326,7 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
 
 1. __Building etcd.__
    We install etcd from source as the benchmarking tool for etcd does not come with the standard installation.
-   The last verison of etcd to build with go 1.13 is etcd 3.4.9.
+   The last version of etcd to build with go 1.13 is etcd 3.4.9.
    ```sh
    git clone https://github.com/etcd-io/etcd.git
    cd etcd
@@ -610,7 +610,7 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
    1001 // Maximum time for 50000 executions (all samples) = 1706460 us 
    All clients done.
    ```
-   The server also print performances measurements.
+   The servers also print performances measurements.
 
 ## Step by Step Instructions
 
@@ -622,7 +622,7 @@ We now explain how to reproduce the following
 4. Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
 5. Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
-Below, we summarize the commands with the parameters as variable.
+Below, we summarize the commands with the parameters as variables.
 For instance, we write:
 ```sh
 n=9 #in the range [3,9]
@@ -921,12 +921,14 @@ We take the average of these values.
 
 ### Comparing progress conditions in Paxos with TCP transport and a 5ms timeout (Figure 9b)
 
+As the previous experiments, the scrips are in the `psync` folder of the artifact and are run with different number of machines:
 ```sh
 # run on $n server (replicas with id 0 to n-1)
 cd $RESYNC/psync
 n=9 #in the range [3,9]
 ```
 
+The commands for the different configurations are:
 * SW Quorum:
   ```sh
   ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 20 --syncQuorum
@@ -968,12 +970,14 @@ It needs to be divided by 1000 to match the request per millisecond reported in 
 
 ### Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
+In this test we use the 9 machines but vary the timeout:
 ```sh
 # run on 9 server
 cd $RESYNC/psync
 t=1 # in the set {1,2,3,5,10,20,50}
 ```
 
+The commands for the different configurations are:
 * SW TCP:
   ```sh
   ./testSimplePaxos.sh --conf default/9replicas-conf.xml --protocol TCP -rt 20 -to $t
