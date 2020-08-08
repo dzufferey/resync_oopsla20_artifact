@@ -7,9 +7,9 @@
     <param> <name>timeout</name> <value>200</value> </param>
     <param> <name>group</name> <value>NIO</value> </param>
     <param> <name>batch</name> <value>2700</value> </param>
-    <param> <name>cr</name> <value>2700</value> </param>
+    <param> <name>cr</name> <value>600</value> </param>
     <param> <name>packetSize</name> <value>32760</value> </param>
-    <param> <name>forwarding</name> <value>false</value> </param>
+    <param> <name>forwarding</name> <value>true</value> </param>
   </parameters>
   <peers>
     <replica> <id>0</id> <address>REPLICA0</address> <port>4444</port> </replica>
