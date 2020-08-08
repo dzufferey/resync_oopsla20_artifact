@@ -1,14 +1,13 @@
-# 424. Programming at the Edge of Synchrony
+# 424. Programming at the Edge of Synchrony (Artifact)
 
 Documentation to reproduce the experiments from the paper "Programming at the Edge of Synchrony".
 
 ## Scope of the Artifact
 
 This artifacts explain how to run ReSync and the other tools against which we compare.
+To goal of the artifact is to reproduce the figures in Section 6 of the paper.
 
 TODO we try to use the latest available version of the tools against which we compare.
-
-TODO scripts for the plots
 
 ### Software Setup
 
@@ -16,6 +15,14 @@ This repository only contains the explanation about how to install and run other
 
 We have tested the tools with Debian and Ubuntu Linux distributions.
 As we use external project, we install them separately from their source to guarantee they have not been tampered.
+
+PSync and ReSync have the same code base.
+As Psync is a special case of ReSync, they share the same runtime.
+PSync is just a specific set of progress condition in ReSync.
+This is implemented in the file [`src/main/scala/psync/Round.scala`](https://github.com/dzufferey/psync/blob/master/src/main/scala/psync/Round.scala).
+A `Round` is the PSync model and an `EventRound` is the ReSync model.
+It is possible to get some of the benefit of ReSync with `Round` by overriding `expectedNbrMessages`.
+We will use that option when comparing PSync and ReSync.
 
 ### Hardware Setup
 
@@ -25,21 +32,13 @@ It is possible to run on fewer machines by running multiple processes on the sam
 The performance numbers will vary depending on the deployment and requires tuning some parameters.
 If you want to witness ReSync running the machines used to get the numbers in the paper, please contact Damien Zufferey (zufferey@mpi-sws.org) for a demonstration.
 
-PSync and ReSync have the same codebase.
-As Psync is a special case of ReSync, they share the same runtime.
-PSync is just a specific set of progress condition in ReSync.
-This is implemented in the file [`src/main/scala/psync/Round.scala`](https://github.com/dzufferey/psync/blob/master/src/main/scala/psync/Round.scala).
-A `Round` is the PSync model and an `EventRound` is the ReSync model.
-It is possible to get some of the benefit of ReSync with `Round` by overriding `expectedNbrMessages`.
-We will use that option when comparing PSync and ReSync.
-
 
 ## Getting Started Guide
 
 
 1. Install clusterssh (optional but really helpful later)
 2. Install dependencies
-3. Clone the artifact repo
+3. Clone the artifact repository
 4. Install PSync
 5. Install LibPaxos3
 6. Install etcd
@@ -77,7 +76,7 @@ From now on, you should connect to the test machines and the rest of the setup o
 Installing the tools has to be done with on the 9 test machines.
 During the installation, there will be _local test run_ and _distribtuted test run_.
 The local test run check that the tools are installed properly by running everything on the same machine.
-The distributed test runs the tool accross machines.
+The distributed test runs the tool across machines.
 This serves to test that the tools are configured properly and the machine can connect to each other.
 
 Some tools requires an extra "client" to drive the test.
@@ -88,7 +87,7 @@ For such cases, the simplest is to open an extra ssh connection to one of the te
 ### Install dependencies
 
 The tools we use have some external dependencies and we group their installation here.
-Here are the command to intall the dependencies.
+Here are the command to install the dependencies.
 
 * Utils:
   ```sh
@@ -102,6 +101,7 @@ Here are the command to intall the dependencies.
   ```sh
   sudo apt install default-jdk ant
   ```
+  We run our tests with OpendJDK 8 but it should work for higher versions.
 * Scala: PSync needs scala on to of java. [sbt](https://www.scala-sbt.org/) takes care of building everything.
   ```sh
   echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
@@ -115,7 +115,7 @@ Here are the command to intall the dependencies.
   ```sh
   sudo apt install golang
   ```
-  If you use debian stable, you need to install go manually:
+  If you use Debian stable, you need to install go manually:
   ```sh
   wget https://golang.org/dl/go1.13.14.linux-amd64.tar.gz
   tar -C /usr/local -xzf go1.13.14.linux-amd64.tar.gz
@@ -156,7 +156,7 @@ To check that the script worked properly you can run
 ```sh
 $RESYNC/findId.sh
 ```
-The command should ouput the ID of the replica, a number between 0 and 8.
+The command should output the ID of the replica, a number between 0 and 8.
 
 If you did an error, you can reset the state of the repo with `git checkout .` and then try again.
 
@@ -174,6 +174,7 @@ This covers both ReSync and PSync.
    export PSYNC=$PWD
    echo "export PSYNC=$PWD" >> ~/.bashrc
    ```
+   TODO hash of the HEAD
 2. __Local test run, part 1.__
    ```sh
    # from the psync folder
@@ -197,9 +198,9 @@ This covers both ReSync and PSync.
    [Warning] @ TcpRuntime: Tried to send packet to 1, but no channel was available.
    java.lang.AssertionError: assertion failed
    ```
-   Warnings are harmless and serves as indication of places when the runtime can be improved (better resource managemenet, graceful shutdown, etc.).
+   Warnings are harmless and serves as indication of places when the runtime can be improved (better resource management, graceful shutdown, etc.).
 
-   On recent version of java, you may see
+   On more recent version of java, you may see
    ```
    WARNING: An illegal reflective access operation has occurred
    WARNING: Illegal reflective access by com.esotericsoftware.kryo.util.UnsafeUtil (file:/home/zufferey/.cache/coursier/v1/https/repo1.maven.org/maven2/com/esotericsoftware/kryo-shaded/4.0.2/kryo-shaded-4.0.2.jar) to constructor java.nio.DirectByteBuffer(long,int,java.lang.Object)
@@ -229,8 +230,6 @@ This covers both ReSync and PSync.
    $RESYNC/psync/testTwoPhaseCommit.sh
    ```
 
-TODO give md5sum/hash of commits files
-
 ### Install LibPaxos3
 
 To install LibPaxos3, we follow the instructions from https://bitbucket.org/sciascid/libpaxos/src/master/
@@ -245,6 +244,8 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    export LPAXOS=$PWD
    echo "export LPAXOS=$PWD" >> ~/.bashrc
    ```
+   The hash of the commit we use is `d255f8b67a32d5e0ef43ac1a393b72cee23d8e0e`.
+   (Obtained by running the command `git rev-parse HEAD`.)
 2. __Local test run.__
    ```sh
    # from the libpaxos/build folder
@@ -289,7 +290,7 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    cd $RESYNC/libpaxos3
    ./run_client.sh -n 9
    ```
-   The client procduces an output which looks like
+   The client produces an output which looks like
    ```
    07 Aug 09:19:01. Connect to 139.19.162.64:8800
    07 Aug 09:19:01. Connect to 139.19.162.65:8800
@@ -317,8 +318,6 @@ To install LibPaxos3, we follow the instructions from https://bitbucket.org/scia
    ```
    You can then stop the client and server (`CTRL+C`).
 
-TODO give md5sum/hash of commits files
-
 ### Install etcd
 
 1. __Building etcd.__
@@ -334,7 +333,8 @@ TODO give md5sum/hash of commits files
    export ETCD=$PWD
    echo "export ETCD=$PWD" >> ~/.bashrc
    ```
-   This install the latest version of etcd (3.4.10 when writting this).
+   The hash of the commit we use is `54ba9589114fc3fa5cc36c313550b3c0c0938c91`.
+   (Obtained by running the command `git rev-parse HEAD`.)
 2. __Local test run.__
    ```sh
    # from the etcd directory
@@ -363,7 +363,7 @@ TODO give md5sum/hash of commits files
    cd $RESYNC/etcd
    ./run_client.sh
    ```
-   The benchmark procduces an output which looks like
+   The benchmark produces an output which looks like
    ```
    INFO: 2020/08/07 10:28:48 parsed scheme: "endpoint"
    INFO: 2020/08/07 10:28:48 ccResolverWrapper: sending new addresses to cc: [{http://139.19.162.68:2379  <nil> 0 <nil>}]
@@ -416,7 +416,7 @@ TODO give md5sum/hash of commits files
      99% in 0.2045 secs.
      99.9% in 0.2127 secs.
    ```
-   You can then stop the etcd server (`CTRL+C`).
+   You can then stop the etcd servers (`CTRL+C`).
 
 ### Install Goolong
 
@@ -427,6 +427,9 @@ To install and run Goolong, we follow the information from https://github.com/gl
    git clone https://github.com/gleissen/goolong.git
    cd goolong
    ```
+   The hash of the commit we use is `2bc38024204f9747ed9818502c5df3d36b96dd7d`.
+   (Obtained by running the command `git rev-parse HEAD`.)
+
    Before, we can build goolong we need to [make a small fix](https://github.com/gleissen/goolong/issues/1).
    Open the file `src/multipaxos/multipaxos.go` and on line 495, replace `Assign` by `Put`.
    Now we can build goolong.
@@ -441,7 +444,7 @@ To install and run Goolong, we follow the information from https://github.com/gl
    # in the goolong folder
    ./run_paxos.sh
    ```
-   should produce an ouput which looks like:
+   should produce an output which looks like:
    ```
    running multi paxos with 3 servers and a client ...
    make: Entering directory '/root/goolong'
@@ -501,7 +504,7 @@ To install and run Goolong, we follow the information from https://github.com/gl
    cd $RESYNC/goolong
    ./run_client.sh -n 9 -q 1000
    ```
-   The client procduces an output which looks like
+   The client produces an output which looks like
    ```
    using config file /root/resync_oopsla20_artifact/goolong/info9.sh
    client: no process found
@@ -537,6 +540,11 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
    export BFTS=$PWD
    echo "export BFTS=$PWD" >> ~/.bashrc
    ```
+   The MD5 sum of the downloaded archive is
+   ```sh
+   # md5sum v1.2.tar.gz
+   4c6cbfa88192294ee5f64d66812a2702  v1.2.tar.gz
+   ```
 2. __Local test run.__
   - edit the configuration file `config/hosts.config` so it contains
     ```
@@ -568,7 +576,7 @@ To install Bft-SMaRt, we follow the instructions from https://github.com/bft-sma
    cd $RESYNC/bft-smart
    ./run_client.sh
    ```
-   The client procduces an output which looks like
+   The client produces an output which looks like
    ```
    TODO ...
    ```
@@ -584,11 +592,9 @@ We now explain how to reproduce the following
 5. Effect of timeout values and transport layer in Paxos with 9 replicas progressing on quorum (Figure 9c)
 
 TODO explain how to toggle replicas in clusterssh
+Below, we try to summarize the commands with 
+When re
 
-TODO for each test
-- how to run (configuration files, scripts)
-- how to interpret the output (compute throughput, etc.)
-- what parameters can be tweaked
 
 ### Benign test: ReSync against LibPaxos3, etcd, Goolong and PSync (Figure 8a)
 
@@ -609,7 +615,7 @@ The output will contains the following toward the end of the output:
 [Notice] @ BatchingClient: 0, #decisions = 97140600, Δt = 112, throughput = 867326 req/s. (9.925758361816406 MB/s)
 ```
 The throughput can be read directly from that line.
-The throughput can vary accross replicas, replicate only count decision when they are part of the quorum.
+The throughput can vary across replicas, replicate only count decision when they are part of the quorum.
 The other replicas eventually learns about these decisions but do not not count them.
 The replica with id 0 has the total count.
 
@@ -630,7 +636,7 @@ For instance, `./testBatching.sh --conf batching/9replicas-conf.xml -to 50` over
 The timeout is the main option which influences the performance.
 An lower timeout makes the system faster but less resilient to disturbances, e.g., sharing CPU with other processes, garbage collection, etc.
 
-ReSync internally similates clients producing requests.
+ReSync internally simulates clients producing requests.
 That part is independent of the actual requests processing and the system keeps accumulating requests and if the system cannot process the requests fast enough, it will eventually take most of the memory.
 If you see such message as `java.lang.OutOfMemoryError: GC overhead limit exceeded`, you can reduce the rate at which request are generated by lowering the `cr` options.
 Alternatively, if the system seems to be starved you can try increasing this value.
@@ -686,14 +692,14 @@ The client produces an output of resembling:
 205 value/sec, 51.30 Mbps, latency min 86151 us max 608868 us avg 401983 us
 ```
 Let the client run for a while, collect the `Mbps` values and average them.
-Notive that the script output `Mbps` not `MB/s`  (bits not bytes).
+Notice that the script output `Mbps` not `MB/s`  (bits not bytes).
 To obtain the final throughput, the value in `Mbps` needs to be divided by 8.
 
 __Options.__
 The script `run_client.sh` runs the client making requests of 32KB (option `-v 32768`) with 100 outstanding requests (option `-o 100`).
 The large request size matches the batching used by other tools.
 The number of outstanding request allow libpaxos3 to use bandwidth more efficiently.
-Varing these options can increase or decrease the system throughput.
+Varying these options can increase or decrease the system throughput.
 
 #### etcd
 
@@ -722,7 +728,7 @@ Summary:
 ```
 We can compute the throughput as `#req/s * reqSize / (1024 * 1024)`.
 The default request size is 32KB.
-In this case, we get a througput of 14.3 MB/s.
+In this case, we get a throughput of 14.3 MB/s.
 
 __Options.__
 The `run_client.sh` script has the following options:
@@ -819,7 +825,7 @@ The commands are:
 
 __Options.__
 The `run_client.sh` script has three options:
-- `t`: the number of client (threads) makeing request in parallel
+- `t`: the number of client (threads) making request in parallel
 - `o`: the number of operation per client
 - `s`: the size of a request
 Varying these options will affect the performances.
@@ -916,9 +922,23 @@ n=9 #in the range [3,9]
 
 ## Scripts used to produce the plots in the paper
 
-TODO ...
+The `figures` folder contains the scripts we used to produce the figures in the paper.
 
-## Caveats
+Making the figures require gnuplot and inkscape:
+```sh
+sudo apt install gnuplot inkscape
+```
 
-Different Replicas may show different results ...
-Timeouts ...
+Each figures has two files:
+* `$NAME.dat` contains the data
+* `$NAME.gnuplot` if the gnuplot script to produce the file
+
+The script `mk_figs.sh` produce the plots (`$NAME.pdf`) which are used in the paper.
+
+The filename match the figures in the paper as follows:
+* `lp3_gl_ed_z` is Figure 8a
+* `bft` is Figure 8b
+* `latency_2pc` is Figure 9a
+* `progress_lv` is Figure 9b
+* `timeout` is Figure 9c
+
