@@ -7,13 +7,13 @@ Documentation to reproduce the experiments from the paper "Programming at the Ed
 This artifacts explain how to run ReSync and the other tools against which we compare.
 To goal of the artifact is to reproduce the figures in Section 6 of the paper.
 Some tools are available in newer versions since we originally ran the tests.
-Here we try to use the more recent versions when possible.
+We try to use the more recent versions when possible.
 
 ### Software Setup
 
 This repository only contains the explanation about how to install and run other tools, as well as scripts and configuration files to facilitate this task.
 
-We have tested the tools with Debian and Ubuntu Linux distributions.
+We have tested the tools with Debian Linux distributions.
 As we use external project, we install them separately from their source to guarantee they have not been tampered.
 
 PSync and ReSync have the same code base.
@@ -22,7 +22,7 @@ PSync is just a specific set of progress condition in ReSync.
 This is implemented in the file [`src/main/scala/psync/Round.scala`](https://github.com/dzufferey/psync/blob/master/src/main/scala/psync/Round.scala).
 A `Round` is the PSync model and an `EventRound` is the ReSync model.
 It is possible to get some of the benefit of ReSync with `Round` by overriding `expectedNbrMessages`.
-We will use that option when comparing PSync and ReSync.
+We use that option when comparing PSync and ReSync.
 
 ### Hardware Setup
 
@@ -37,7 +37,7 @@ If you want to witness ReSync running the machines used to get the numbers in th
 
 ## Getting Started Guide
 
-1. Install clusterssh (optional but really helpful later)
+1. Install clusterssh (optional but really helpful to run the tests)
 2. Install dependencies
 3. Clone the artifact repository
 4. Install PSync
@@ -61,7 +61,7 @@ This greatly helps running the tests.
 sudo apt install clusterssh
 ```
 
-Then put the addresses of the machines you will use in `.clusterssh/clusters`.
+Then put the addresses of the test machines in `.clusterssh/clusters`.
 For instance, the file may contain
 ```
 resync srv-76-164.mpi-sws.org srv-76-165.mpi-sws.org srv-76-166.mpi-sws.org srv-76-167.mpi-sws.org srv-76-168.mpi-sws.org srv-76-169.mpi-sws.org srv-76-117.mpi-sws.org srv-76-118.mpi-sws.org srv-76-119.mpi-sws.org
@@ -116,12 +116,7 @@ Here are the command to install the dependencies.
   ```
 * Go is needed for etcd and Goolong.
   etcd requires a recent version of go but [Goolong does not work with go 1.14](https://github.com/gleissen/goolong/issues/2).
-  Therefore, we recommend using go version 1.13.
-  If you use Ubuntu 20.04, you can do:
-  ```sh
-  sudo apt install golang
-  ```
-  If you use Debian stable, you need to install go manually:
+  Therefore, we recommend using go version 1.13 manually:
   ```sh
   wget https://golang.org/dl/go1.13.14.linux-amd64.tar.gz
   tar -C /usr/local -xzf go1.13.14.linux-amd64.tar.gz
@@ -163,7 +158,7 @@ $RESYNC/findId.sh
 ```
 The command should output the ID of the replica, a number between 0 and 8.
 
-If you did an error, you can reset the state of the repo with `git checkout .` and then try again.
+If you did an mistake, you can reset the state of the repo with `git checkout .` and then try again.
 
 ### Install PSync
 
@@ -235,6 +230,9 @@ This covers both ReSync and PSync.
    ```sh
    $RESYNC/psync/testTwoPhaseCommit.sh
    ```
+   This runs the two phase commit protocol.
+   The tests automatically ends after a few minutes.
+
 
 ### Install LibPaxos3
 
@@ -641,7 +639,7 @@ When the number of machines changes, in the clusterssh `Hosts` menu it is possib
 
 Running the tests is similar to the distributed test run but varying the number of replicas from 3 to 9.
 The commands are:
-```
+```sh
 # run on $n server (replicas with id 0 to n-1)
 cd $RESYNC/psync
 n=9 #in the range [3,9]
@@ -667,17 +665,18 @@ Running the system with the additional options `--syncAll` can help but slowdown
 
 
 __Options.__
-The configuration file specifies default options.
+The configuration file specifies default options for a given test.
 The main options which can be changed is the timeout.
 It is possible to override the options specified in the configuration file by specifying them as argument *after* the `--conf` option.
 For instance, `./testBatching.sh --conf batching/9replicas-conf.xml -to 50` overrides the timeout in the configuration and set it to 50 ms.
-`./testBatching.sh --help` will print the total list of all the options.
+`./testBatching.sh --help` will print the list of all the options.
 The timeout is the main option which influences the performance.
 An lower timeout makes the system faster but less resilient to disturbances, e.g., sharing CPU with other processes, garbage collection, etc.
 
 ReSync internally simulates clients producing requests.
-That part is independent of the actual requests processing and the system keeps accumulating requests and if the system cannot process the requests fast enough, it will eventually take most of the memory.
-If you see such message as `java.lang.OutOfMemoryError: GC overhead limit exceeded`, you can reduce the rate at which request are generated by lowering the `cr` options.
+That part is independent of the actual requests processing.
+if the system cannot process the requests fast enough, it will keep accumulating requests and it will eventually take most of the memory.
+If you see such message as `java.lang.OutOfMemoryError: GC overhead limit exceeded`, you can reduce the rate at which request are generated by lowering the `cr` options (see default value in configuration file).
 Alternatively, if the system seems to be starved you can try increasing this value.
 
 #### PSync
@@ -686,7 +685,7 @@ PSync is run in a similar fashion as ReSync but with an extra flag (`--syncTO`) 
 As PSync's progress is limited by the timeout.
 The timeout value must be set quite low.
 Here, are the command with timeout values we used for each number of replicas:
-```
+```sh
 cd $RESYNC/psync
 ./testBatching.sh --conf batching/3replicas-conf.xml --syncTO -to 2
 ./testBatching.sh --conf batching/4replicas-conf.xml --syncTO -to 3
@@ -736,8 +735,8 @@ To obtain the final throughput, the value in `Mbps` needs to be divided by 8.
 
 __Options.__
 The script `run_client.sh` runs the client making requests of 32KB (option `-v 32768`) with 100 outstanding requests (option `-o 100`).
-The large request size matches the batching used by other tools.
-The number of outstanding request allow LibPaxos3 to use bandwidth more efficiently.
+The large request size matches the batching used by ReSync/PSync.
+The number of outstanding requests allow LibPaxos3 to use bandwidth more efficiently.
 Varying these options can increase or decrease the system throughput.
 
 #### etcd
@@ -775,6 +774,7 @@ The `run_client.sh` script has the following options:
 * `-t`: number of clients in parallel (default: 1000)
 * `-o`: number of operations (default: 50000)
 * `-s`: size of the request (default: 32768)
+
 More information about etcd benchmarking is can be found there: https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/performance.md#benchmarks
 
 #### Goolong
@@ -817,7 +817,7 @@ The `run_client.sh` script takes as parameter the number of requests.
 
 #### ReSync
 
-```
+```sh
 # run on $n server (replicas with id 0 to n-1)
 cd $RESYNC/psync
 n=9 #in the range [4,9]
@@ -864,8 +864,8 @@ The commands are:
 
 __Options.__
 The `run_client.sh` script has three options:
-- `t`: the number of client (threads) making request in parallel
-- `o`: the number of operation per client
+- `t`: the number of clients (threads) making request in parallel
+- `o`: the number of operations per client
 - `s`: the size of a request
 Varying these options will affect the performances.
 
@@ -877,7 +877,7 @@ Throughput = 1634.2539 operations/sec (Maximum observed: 1647.175 ops/sec)
 ```
 From this, we compute the throughput in MB/s with the following formula: `#ops/sec * request_size / (1024*1024)`.
 In that case if the client was
-```
+```sh
 ./run_client.sh -t 7 -o 10000 -s 2048
 ```
 The request size is 2048 and we get a throughput of 3.3 MB/s.
@@ -929,27 +929,27 @@ n=9 #in the range [3,9]
 
 * SW Quorum:
   ```sh
-  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 20 --syncQuorum
+  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 20 --syncQuorum
   ```
 * SW All:
   ```sh
-  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 20 --syncAll
+  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 20 --syncAll
   ```
 * SW TO:
   ```sh
-  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 20 --syncTO
+  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 20 --syncTO
   ```
 * Ser Quorum:
   ```sh
-  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 1 --syncQuorum
+  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 1 --syncQuorum
   ```
 * Ser All:
   ```sh
-  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 1 --syncAll
+  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 1 --syncAll
   ```
 * Ser TO:
   ```sh
-  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml --protocol TCP -rt 1 --syncTO
+  ./testSimplePaxos.sh --conf default/${n}replicas-conf.xml -rt 1 --syncTO
   ```
 
 The tests are designed to put stress on the runtime and the system can output messages of the form:
@@ -997,7 +997,7 @@ Similar to the previous test.
 
 ## Scripts used to produce the plots in the paper
 
-The `figures` folder contains the scripts we used to produce the figures in the paper.
+The `figures` folder contains the scripts that produce the figures in the paper.
 
 Making the figures require gnuplot and inkscape:
 ```sh
@@ -1006,11 +1006,11 @@ sudo apt install gnuplot inkscape
 
 Each figures has two files:
 * `$NAME.dat` contains the data
-* `$NAME.gnuplot` if the gnuplot script to produce the file
+* `$NAME.gnuplot` is the gnuplot script to produce the figures
 
-The script `mk_figs.sh` produce the plots (`$NAME.pdf`) which are used in the paper.
+The script `mk_figs.sh` produces the plots (`$NAME.pdf`) which are used in the paper.
 
-The filename match the figures in the paper as follows:
+The filenames match the figures in the paper as follows:
 * `lp3_gl_ed_z` is Figure 8a;
 * `bft` is Figure 8b;
 * `latency_2pc` is Figure 9a;
