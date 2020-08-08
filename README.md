@@ -174,7 +174,7 @@ This covers both ReSync and PSync.
    export PSYNC=$PWD
    echo "export PSYNC=$PWD" >> ~/.bashrc
    ```
-   The hash of the commit we use is `23c4c1003de729898b1b52ae1fc6edf802c9790d`.
+   The hash of the commit we use is `3c03656e291794c34769234f358c84798c75f0fd`.
    (Obtained by running the command `git rev-parse HEAD`.)
 2. __Local test run, part 1.__
    ```sh
