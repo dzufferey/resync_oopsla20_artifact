@@ -704,9 +704,10 @@ We are currently working on a new solution to clean this part so we did not yet 
   This does not happen enough to be a problem
   We are still trying to track down this bug.
   However, as it changes between versions of netty we are not sure where the problem is or if it even is one our side.
-* ReSync is a research prototype, so it is likely to contains many bugs.
-  Please report them to [our issue tracker](https://github.com/dzufferey/psync/issues).
-  Thank you.
+
+ReSync is a research prototype, so it is likely to contains many bugs.
+Please report them to [our issue tracker](https://github.com/dzufferey/psync/issues).
+Thank you.
 
 #### PSync
 
