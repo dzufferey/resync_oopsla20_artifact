@@ -228,7 +228,7 @@ This covers both ReSync and PSync.
 4. __Distributed test run.__
    on the 9 test machines at the same time, run the following command:
    ```sh
-   $RESYNC/psync/testTwoPhaseCommit.sh
+   $RESYNC/psync/testTwoPhaseCommit.sh --conf $RESYNC/psync/default/9replicas-conf.xml
    ```
    This runs the two phase commit protocol.
    The tests automatically ends after a few minutes.
